@@ -1,10 +1,35 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
+  <HeaderSection :logo="logoURL" :menu="headerMenu"/>
   <router-view/>
+  <FooterSection :menu="headerMenu"/>
 </template>
+
+<script>
+import { ref } from 'vue';
+import HeaderSection from './components/HeaderSection.vue';
+import FooterSection from './components/FooterSection.vue';
+
+const logoURL = require('./assets/logo.png');
+const headerMenu = ref([
+  { id: 1, url: '/', text: 'Home' },
+  { id: 2, url: '/projects', text: 'Projects' },
+  { id: 3, url: '/about', text: 'About' }
+]);
+
+export default {
+  name: 'App',
+  components: {
+    HeaderSection,
+    FooterSection
+  },
+  data () {
+    return {
+      headerMenu,
+      logoURL
+    }
+  }
+}
+</script>
 
 <style>
 #app {
@@ -12,19 +37,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #ffdb00;
+  background-color: #050020;
 }
-
-nav {
-  padding: 30px;
-}
-
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-nav a.router-link-exact-active {
-  color: #42b983;
+body {
+  margin: 0;
 }
 </style>

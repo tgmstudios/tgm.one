@@ -1,18 +1,32 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <TextAnimation v-if="showTextAnimation" @animation-complete="onAnimationComplete"/>
+    <GlobeWidget v-if="showGlobe" />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import TextAnimation from '@/components/TaglineWidget.vue'
+import GlobeWidget from '@/components/GlobeWidget.vue'
 
 export default {
   name: 'HomeView',
   components: {
-    HelloWorld
+    TextAnimation,
+    GlobeWidget
+  },
+  data() {
+    return {
+      showTextAnimation: true,
+      showGlobe: false
+    };
+  },
+  methods: {
+    onAnimationComplete() {
+      this.showTextAnimation = false;
+      this.showGlobe = true;
+    }
   }
 }
 </script>
