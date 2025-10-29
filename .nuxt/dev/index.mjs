@@ -1360,7 +1360,7 @@ const _Y5rWMrV7z3Y6sJQmpdYAWrn7QqDkOmmo0H0Bn6rshY = (function(nitro) {
 
 const rootDir = "/workspace";
 
-const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"}],"link":[],"style":[],"script":[],"noscript":[],"title":"tgm-one","bodyAttrs":{"class":"bg-gray-950 text-gray-100"}};
+const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"}],"link":[],"style":[],"script":[],"noscript":[],"title":"TGM.One","bodyAttrs":{"class":"bg-gray-950 text-gray-100"}};
 
 const appRootTag = "div";
 

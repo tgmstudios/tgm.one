@@ -30,3 +30,9 @@ export default {
   }
 }
 </script>
+
+<script setup>
+definePageMeta({
+  pageTransition: { name: 'page-no-enter', mode: 'out-in' }
+})
+</script>

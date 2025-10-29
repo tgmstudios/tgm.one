@@ -14,8 +14,9 @@ export default defineNuxtConfig({
     }
   },
   app: {
+    pageTransition: { name: 'page', mode: 'out-in' },
     head: {
-      title: 'tgm-one',
+      title: 'TGM.One',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' }
       ],

@@ -18,6 +18,8 @@
 
 <script setup>
 import MarkdownIt from 'markdown-it'
+import { watchEffect } from 'vue'
+import { useHead } from '#imports'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -32,6 +34,12 @@ const { data } = await useAsyncData(
 )
 
 const post = computed(() => data.value || null)
+
+// Set a content-specific page title when the post data is available
+watchEffect(() => {
+  const title = post.value?.title || post.value?.name
+  useHead({ title: title ? `${title} — TGM.One` : 'Blog — TGM.One' })
+})
 
 const md = new MarkdownIt({
   html: false,
