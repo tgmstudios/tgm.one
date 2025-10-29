@@ -5,54 +5,6 @@ on:
     branches: [ "main" , "staging" ]
 
 jobs:
-  build-cms:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Extract branch name
-      shell: bash
-      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-      id: extract_branch
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Login to CCSO Docker Registry
-      uses: docker/login-action@v3
-      with:
-        registry: registry.psuccso.org
-        username: robot$ccso-site+github
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Generate API Tag Names
-      run: |
-        echo "${{ steps.extract_branch.outputs.branch }}"
-        if [ ${{ steps.extract_branch.outputs.branch }} = "main" ]; then
-          echo "TAG_LATEST_CMS=ccso-cms:latest" >> $GITHUB_ENV
-          echo "TAG_COMMIT_CMS=ccso-cms:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-        elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
-          echo "TAG_LATEST_CMS=ccso-cms-stage:latest" >> $GITHUB_ENV
-          echo "TAG_COMMIT_CMS=ccso-cms-stage:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-        else
-          exit 0
-        fi
-
-    - name: Build and push CMS
-      uses: docker/build-push-action@v6
-      with:
-        context: ./backend
-        platforms: linux/amd64,linux/arm64
-        file: ./backend/.docker/Dockerfile
-        push: true
-        tags: |
-          registry.psuccso.org/ccso-site/${{ env.TAG_LATEST_CMS }}
-          registry.psuccso.org/ccso-site/${{ env.TAG_COMMIT_CMS }}
-        cache-from: type=registry,ref=registry.psuccso.org/ccso-site/${{ env.TAG_LATEST_CMS }}
-        cache-to: type=inline
 
   build-website:
     runs-on: ubuntu-latest
@@ -73,8 +25,8 @@ jobs:
     - name: Login to CCSO Docker Registry
       uses: docker/login-action@v3
       with:
-        registry: registry.psuccso.org
-        username: robot$ccso-site+github
+        registry: registry.tgm.one
+        username: robot$tgm-one+github
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Generate Website Tag Names
@@ -104,7 +56,7 @@ jobs:
         cache-to: type=inline
 
   deploy-rancher:
-    needs: [build-cms, build-website]
+    needs: [build-website]
     runs-on: ubuntu-latest
     steps:
     - name: Extract branch name
@@ -114,7 +66,7 @@ jobs:
 
     - name: Redeploy Rancher
       run: |
-        url='https://rancher.psuccso.org'
+        url='https://rancher.tgm.one'
         cluster=local
         token=${{ secrets.RANCHER_TOKEN }}
 
@@ -138,12 +90,10 @@ jobs:
 
         echo "${{ steps.extract_branch.outputs.branch }}"
         if [ ${{ steps.extract_branch.outputs.branch }} = "main" ]; then
-            namespace=ccso-site
-            redeploy "backend"
+            namespace=tgm-one
             redeploy "frontend"
         elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
-            namespace=ccso-site-staging
-            redeploy "backend"
+            namespace=tgm-one-staging
             redeploy "frontend"
         else
             exit 0

@@ -6,7 +6,7 @@
           <NuxtLink :to="'/'" class="shrink-0"><img :src="logoURL" alt="Logo" class="h-10 w-10 rounded-md object-contain bg-white/10" /></NuxtLink>
           <div>
             <p class="font-semibold">Aiden Johnson</p>
-            <p class="text-sm text-gray-400">Building thoughtful software and systems.</p>
+            <p class="text-sm text-gray-400">From design and development to hosting and deploying.</p>
           </div>
         </div>
         <nav class="flex flex-wrap gap-4">
