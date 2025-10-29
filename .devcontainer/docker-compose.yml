@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: \\wsl.localhost\Ubuntu-24.04\home\tgm\Workspaces\tgm.one
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - \\wsl.localhost\Ubuntu-24.04\home\tgm\Workspaces\tgm.one:/app
+    networks:
+      - app-network
+    ports:
+      - "2010:8080"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - WATCHPACK_POLLING=true
+
+networks:
+  app-network:

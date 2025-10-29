@@ -6,8 +6,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getProjects } from '@/lib/projectsLoader.js';
-import Globe from 'globe.gl';
-import * as THREE from 'three';
 
 export default {
     name: 'GlobeWidget',
@@ -15,6 +13,8 @@ export default {
         const router = useRouter();
         const globeContainer = ref(null);
         let myGlobe;
+        let animationHandle;
+        const objectGroups = [];
 
         const handleResize = () => {
             if (myGlobe && globeContainer.value && globeContainer.value.getBoundingClientRect().width) {
@@ -71,7 +71,11 @@ export default {
             return { ...project, lat, lng };
         });
 
-        onMounted(() => {
+        onMounted(async () => {
+            const [{ default: Globe }, THREE] = await Promise.all([
+                import('globe.gl'),
+                import('three')
+            ]);
             myGlobe = Globe()
             myGlobe(globeContainer.value)
                 .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
@@ -130,6 +134,12 @@ export default {
 
                     // Add sprites to group
                     group.add(textSprite);
+                    group.userData = {
+                        iconSprite,
+                        textSprite,
+                        title: d.title
+                    };
+                    objectGroups.push(group);
                     return group;
                 })
                 .customThreeObjectUpdate((obj, d) => {
@@ -160,11 +170,117 @@ export default {
             const altitude = screenWidth < 768 ? 3.5 : 2.5; // Reduced altitude for mobile
             myGlobe.pointOfView({ altitude: altitude })
 
+            // Simple screen-space anti-collision for labels
+            const projectToScreen = (vec3) => {
+                const camera = myGlobe.camera();
+                const renderer = myGlobe.renderer();
+                const width = renderer.domElement.clientWidth;
+                const height = renderer.domElement.clientHeight;
+                const projected = vec3.clone().project(camera);
+                return {
+                    x: (projected.x + 1) * 0.5 * width,
+                    y: (1 - (projected.y + 1) * 0.5) * height,
+                    z: projected.z
+                };
+            };
+
+            const isFrontFacing = (worldPosition) => {
+                // For a sphere centered at origin, a point is front-facing if
+                // the angle between camera position vector and point vector < 90°
+                // i.e., dot(P, C) > 0 in world space.
+                const camera = myGlobe.camera();
+                return worldPosition.dot(camera.position) > 0;
+            };
+
+            const updateLabelCollisions = () => {
+                if (!myGlobe) return;
+                const renderer = myGlobe.renderer();
+                if (!renderer) return;
+                const width = renderer.domElement.clientWidth || window.innerWidth;
+                const height = renderer.domElement.clientHeight || window.innerHeight;
+
+                // grid cell size in pixels
+                const cellSize = 48;
+                const gridCols = Math.ceil(width / cellSize);
+                const grid = new Map();
+
+                const temp = new THREE.Vector3();
+                const items = [];
+
+                for (const group of objectGroups) {
+                    if (!group || !group.userData) continue;
+                    group.getWorldPosition(temp);
+                    // back-face cull
+                    const visibleSide = isFrontFacing(temp);
+                    group.visible = visibleSide;
+                    if (!visibleSide) continue;
+
+                    const screen = projectToScreen(temp);
+
+                    // heuristic radius based on title length and screen size
+                    const title = group.userData.title || '';
+                    const baseR = 18;
+                    const perChar = 0.45;
+                    const maxExtra = 22;
+                    const r = baseR + Math.min(maxExtra, title.length * perChar);
+
+                    items.push({ group, x: screen.x, y: screen.y, z: screen.z, r });
+                }
+
+                // sort nearer first (smaller z in NDC closer to camera)
+                items.sort((a, b) => a.z - b.z);
+
+                const taken = [];
+                for (const it of items) {
+                    const col = Math.floor(it.x / cellSize);
+                    const row = Math.floor(it.y / cellSize);
+                    const key = `${col}:${row}`;
+                    const neighbors = [];
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            neighbors.push(grid.get(`${col + dx}:${row + dy}`) || []);
+                        }
+                    }
+                    let overlaps = false;
+                    for (const list of neighbors) {
+                        for (const other of list) {
+                            const dx = it.x - other.x;
+                            const dy = it.y - other.y;
+                            const rr = it.r + other.r;
+                            if (dx * dx + dy * dy < rr * rr) {
+                                overlaps = true;
+                                break;
+                            }
+                        }
+                        if (overlaps) break;
+                    }
+
+                    const { textSprite } = it.group.userData;
+                    if (textSprite) {
+                        textSprite.visible = !overlaps;
+                    }
+
+                    if (!overlaps) {
+                        const bucket = grid.get(key) || [];
+                        bucket.push({ x: it.x, y: it.y, r: it.r });
+                        grid.set(key, bucket);
+                        taken.push(it);
+                    }
+                }
+            };
+
+            const tick = () => {
+                updateLabelCollisions();
+                animationHandle = requestAnimationFrame(tick);
+            };
+            tick();
+
             window.addEventListener('resize', handleResize);
             handleResize(); // Initial resize
         });
         onUnmounted(() => {
             window.removeEventListener('resize', handleResize);
+            if (animationHandle) cancelAnimationFrame(animationHandle);
         });
 
         return { globeContainer };

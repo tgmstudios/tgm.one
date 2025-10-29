@@ -7,8 +7,8 @@
 
 <script>
 // @ is an alias to /src
-import TextAnimation from '@/components/TaglineWidget.vue'
-import GlobeWidget from '@/components/GlobeWidget.vue'
+import TextAnimation from '~/components/TaglineWidget.vue'
+import GlobeWidget from '~/components/GlobeWidget.vue'
 
 export default {
   name: 'HomeView',

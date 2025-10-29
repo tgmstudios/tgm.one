@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #__nuxt {
+    @apply bg-gray-950 text-gray-100 antialiased;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+  }
+  body { margin: 0; }
+}

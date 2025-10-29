@@ -1,22 +1,25 @@
 <template>
   <header>
-    <router-link :key="1" :to="'/'" class="logo"><img :src="logo"></router-link>
+    <NuxtLink :key="1" :to="'/'" class="logo"><img :src="logo"></NuxtLink>
     <nav>
-      <router-link v-for="link in menu" :key="link.id" :to="link.url">{{link.text}}</router-link>
+      <NuxtLink v-for="link in menu" :key="link.id" :to="link.url">{{link.text}}</NuxtLink>
     </nav>
     <a href="#" class="account">
-      <font-awesome-icon :icon="['fas', 'user']" />
+      <UserIcon />
     </a>
   </header>  
 </template>
 
 <script>
+import { UserIcon } from '@heroicons/vue/24/solid'
+
 export default {
   name: 'HeaderSection',
   props: {
     menu: Array,
     logo: String
-  }
+  },
+  components: { UserIcon }
 }
 </script>
 
