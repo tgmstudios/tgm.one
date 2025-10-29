@@ -1,17 +1,20 @@
 <template>
   <header>
     <NuxtLink :key="1" :to="'/'" class="logo"><img :src="logo"></NuxtLink>
-    <nav>
+    <nav :class="{ open: isMenuOpen }">
       <NuxtLink v-for="link in menu" :key="link.id" :to="link.url">{{link.text}}</NuxtLink>
     </nav>
     <a href="#" class="account">
       <UserIcon />
     </a>
+    <button class="menu-toggle" @click="isMenuOpen = !isMenuOpen" aria-label="Toggle navigation">
+      <component :is="isMenuOpen ? 'XMarkIcon' : 'Bars3Icon'" />
+    </button>
   </header>  
 </template>
 
 <script>
-import { UserIcon } from '@heroicons/vue/24/solid'
+import { UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/solid'
 
 export default {
   name: 'HeaderSection',
@@ -19,7 +22,17 @@ export default {
     menu: Array,
     logo: String
   },
-  components: { UserIcon }
+  components: { UserIcon, Bars3Icon, XMarkIcon },
+  data() {
+    return {
+      isMenuOpen: false
+    }
+  },
+  watch: {
+    $route() {
+      this.isMenuOpen = false
+    }
+  }
 }
 </script>
 
@@ -61,5 +74,54 @@ nav a.router-link-exact-active {
     color: #ffdb00;
     text-decoration: underline;
     text-decoration-thickness: 2px;
+}
+
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0 8px;
+}
+.menu-toggle svg {
+  width: 32px;
+  height: 32px;
+  color: #E5DED4;
+}
+
+@media (max-width: 768px) {
+  header {
+    align-items: center;
+    position: relative;
+    padding: 10px 14px;
+  }
+  .account {
+    display: none;
+  }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  nav {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 10, 0.98);
+    border-top: 1px solid rgba(229, 222, 212, 0.1);
+    display: none;
+    padding: 12px 10px;
+    z-index: 50;
+    text-align: right;
+  }
+  nav.open {
+    display: block;
+  }
+  nav a {
+    display: block;
+    padding: 12px 16px;
+    text-align: right;
+  }
 }
 </style>
