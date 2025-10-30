@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ "main" , "staging" ]
+    branches: [ "master" , "staging" ]
 
 jobs:
 
@@ -26,18 +26,18 @@ jobs:
       uses: docker/login-action@v3
       with:
         registry: registry.tgm.one
-        username: robot$tgm-one+github
+        username: robot$tgm.one+github
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Generate Website Tag Names
       run: |
         echo "${{ steps.extract_branch.outputs.branch }}"
         if [ ${{ steps.extract_branch.outputs.branch }} = "main" ]; then
-          echo "TAG_LATEST_WEBSITE=ccso-site:latest" >> $GITHUB_ENV
-          echo "TAG_COMMIT_WEBSITE=ccso-site:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "TAG_LATEST_WEBSITE=tgm-one:latest" >> $GITHUB_ENV
+          echo "TAG_COMMIT_WEBSITE=tgm-one:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
-          echo "TAG_LATEST_WEBSITE=ccso-site-stage:latest" >> $GITHUB_ENV
-          echo "TAG_COMMIT_WEBSITE=ccso-site-stage:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "TAG_LATEST_WEBSITE=tgm-one-stage:latest" >> $GITHUB_ENV
+          echo "TAG_COMMIT_WEBSITE=tgm-one-stage:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         else
           exit 0
         fi
@@ -50,9 +50,9 @@ jobs:
         file: ./frontend/.docker/Dockerfile
         push: true
         tags: |
-          registry.psuccso.org/ccso-site/${{ env.TAG_LATEST_WEBSITE }}
-          registry.psuccso.org/ccso-site/${{ env.TAG_COMMIT_WEBSITE }}
-        cache-from: type=registry,ref=registry.psuccso.org/ccso-site/${{ env.TAG_LATEST_WEBSITE }}
+          registry.tgm.one/${{ env.TAG_LATEST_WEBSITE }}
+          registry.tgm.one/${{ env.TAG_COMMIT_WEBSITE }}
+        cache-from: type=registry,ref=registry.tgm.one/${{ env.TAG_LATEST_WEBSITE }}
         cache-to: type=inline
 
   deploy-rancher:
