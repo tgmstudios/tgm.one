@@ -1,5 +1,5 @@
 import process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};import { tmpdir } from 'node:os';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getResponseStatusText } from 'file:///workspace/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, getHeader, getResponseStatusText } from 'file:///workspace/node_modules/h3/dist/index.mjs';
 import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
 import nodeCrypto from 'node:crypto';
@@ -1360,7 +1360,7 @@ const _Y5rWMrV7z3Y6sJQmpdYAWrn7QqDkOmmo0H0Bn6rshY = (function(nitro) {
 
 const rootDir = "/workspace";
 
-const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"}],"link":[],"style":[],"script":[],"noscript":[],"title":"TGM.One","bodyAttrs":{"class":"bg-gray-950 text-gray-100"}};
+const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"},{"name":"description","content":"Aiden Johnson - Software developer focused on building practical, reliable systems. Explore projects in RFID, IoT, web platforms, and infrastructure."},{"name":"robots","content":"index, follow"}],"link":[],"style":[],"script":[],"noscript":[],"title":"TGM.One","bodyAttrs":{"class":"bg-gray-950 text-gray-100"},"htmlAttrs":{"lang":"en"}};
 
 const appRootTag = "div";
 
@@ -1451,7 +1451,22 @@ const plugins = [
 _jpB3azUL9t3qdmDhEaZsczEpfhE9NnQDefE4lNHbZNs
 ];
 
-const assets = {};
+const assets = {
+  "/index.mjs": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"15720-yp3usC4h675CuWHxrzOAbney784\"",
+    "mtime": "2025-10-31T17:44:40.320Z",
+    "size": 87840,
+    "path": "index.mjs"
+  },
+  "/index.mjs.map": {
+    "type": "application/json",
+    "etag": "\"53f95-5vl6QqU4xWYB972AsJZS+y18r2I\"",
+    "mtime": "2025-10-31T17:44:40.320Z",
+    "size": 343957,
+    "path": "index.mjs.map"
+  }
+};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
@@ -1862,11 +1877,13 @@ async function getIslandContext(event) {
 }
 
 const _lazy_V0bMH4 = () => Promise.resolve().then(function () { return ____path_$1; });
+const _lazy_l840Wk = () => Promise.resolve().then(function () { return sitemap_xml$1; });
 const _lazy_LuixcS = () => Promise.resolve().then(function () { return renderer$1; });
 
 const handlers = [
   { route: '', handler: _wKQydp, lazy: false, middleware: true, method: undefined },
   { route: '/api/foligo/**:path', handler: _lazy_V0bMH4, lazy: true, middleware: false, method: undefined },
+  { route: '/sitemap.xml', handler: _lazy_l840Wk, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_error', handler: _lazy_LuixcS, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_LuixcS, lazy: true, middleware: false, method: undefined }
@@ -2230,6 +2247,69 @@ const ____path_$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: ____path_
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const sitemap_xml = defineEventHandler(async (event) => {
+  const hostname = getHeader(event, "host") || "tgm.one";
+  const protocol = hostname.includes("localhost") ? "http" : "https";
+  const baseUrl = `${protocol}://${hostname}`;
+  const staticPages = [
+    "/",
+    "/about",
+    "/projects",
+    "/blogs"
+  ];
+  const projectKeys = [
+    "tagaby",
+    "android-ota-update",
+    "perfect-portion",
+    "campus-calendar",
+    "telaeris-website",
+    "xpressrfid-ecommerce",
+    "squarebrain",
+    "saints-verify",
+    "r2d2-replica",
+    "red-bird-pantry",
+    "tgm-auth",
+    "tgm-mine",
+    "tgmusic-bot",
+    "tgmmc",
+    "site-generator"
+  ];
+  const projectPages = projectKeys.map((key) => `/project/${key}`);
+  let blogPages = [];
+  try {
+    const config = useRuntimeConfig();
+    const { createFoligoClient } = await Promise.resolve().then(function () { return foligoClient; });
+    const foligo = createFoligoClient({
+      foligoBaseUrl: config.public.foligoBaseUrl,
+      foligoProjectId: config.public.foligoProjectId
+    });
+    const blogs = await foligo.getBlogs();
+    blogPages = blogs.map((blog) => {
+      const id = blog.id || blog._id || blog.contentId;
+      return `/blog/${id}`;
+    });
+  } catch (e) {
+    console.error("Failed to fetch blogs for sitemap:", e);
+  }
+  const allPages = [...staticPages, ...projectPages, ...blogPages];
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allPages.map((page) => `  <url>
+    <loc>${baseUrl}${page}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>${page === "/" ? "1.0" : "0.8"}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+  event.node.res.setHeader("Content-Type", "text/xml; charset=utf-8");
+  event.node.res.setHeader("Cache-Control", "public, max-age=3600");
+  return sitemap;
+});
+
+const sitemap_xml$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: sitemap_xml
+}, Symbol.toStringTag, { value: 'Module' }));
+
 function renderPayloadResponse(ssrContext) {
   return {
     body: stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers) ,
@@ -2427,5 +2507,41 @@ function renderHTMLDocument(html) {
 const renderer$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: renderer
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function createFoligoClient(config) {
+  const baseUrl = "/api/foligo" ;
+  const projectId = config.foligoProjectId;
+  const safeFetch = async (path, options = {}) => {
+    const url = `${baseUrl}${path}`;
+    return await $fetch(url, { ...options });
+  };
+  const normalizeId = (item) => (item == null ? void 0 : item.id) || (item == null ? void 0 : item._id) || (item == null ? void 0 : item.contentId) || null;
+  const getBlogs = async () => {
+    if (!projectId) return [];
+    const data = await safeFetch(`/api/projects/${projectId}/content`).catch(() => []);
+    const items = Array.isArray(data) ? data : (data == null ? void 0 : data.items) || [];
+    const filtered = items.filter((c) => {
+      const type = (c.type || c.category || "").toString().toLowerCase();
+      return type.includes("blog") || type.includes("post") || !type;
+    });
+    return filtered.map((c) => ({ id: normalizeId(c) || c.slug || c.uid, ...c }));
+  };
+  const getBlogById = async (id) => {
+    if (!id) return null;
+    const data = await safeFetch(`/api/projects/${projectId}/content`).catch(() => null);
+    const items = Array.isArray(data) ? data : (data == null ? void 0 : data.items) || [];
+    const found = items.find((c) => {
+      const cid = normalizeId(c);
+      return cid === id;
+    });
+    return found || null;
+  };
+  return { getBlogs, getBlogById };
+}
+
+const foligoClient = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  createFoligoClient: createFoligoClient
 }, Symbol.toStringTag, { value: 'Module' }));
 //# sourceMappingURL=index.mjs.map

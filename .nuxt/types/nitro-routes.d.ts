@@ -6,6 +6,9 @@ declare module "nitropack/types" {
     '/api/foligo/**:path': {
       'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/api/foligo/[...path]').default>>>>
     }
+    '/sitemap.xml': {
+      'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../server/routes/sitemap.xml').default>>>>
+    }
     '/__nuxt_error': {
       'default': Simplify<Serialize<Awaited<ReturnType<typeof import('../../node_modules/@nuxt/nitro-server/dist/runtime/handlers/renderer').default>>>>
     }

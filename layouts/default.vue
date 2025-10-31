@@ -39,8 +39,41 @@ const pageTitle = computed(() => {
   return siteName
 })
 
+const pageDescription = computed(() => {
+  const path = route.path || '/'
+  if (path === '/' || path === '') {
+    return 'Aiden Johnson - Software developer focused on building practical, reliable systems. Explore projects in RFID, IoT, web platforms, and infrastructure.'
+  }
+  if (path === '/about') {
+    return 'Learn about Aiden Johnson, a software developer studying Computer Science at Penn State, building products at Telaeris, and leading technical initiatives for PSU Competitive Cybersecurity Organization.'
+  }
+  if (path === '/projects') {
+    return 'Explore software development projects including RFID tracking systems, IoT solutions, web platforms, and infrastructure projects by Aiden Johnson.'
+  }
+  if (path === '/blogs') {
+    return 'Read blog posts about software development, technology, and technical insights from Aiden Johnson at TGM.One.'
+  }
+  if (path.startsWith('/project/')) {
+    const key = route.params.project
+    const proj = key ? getProjects()[key] : null
+    if (proj && proj.excerpt) {
+      return proj.excerpt
+    }
+    return `Project details and information from TGM.One`
+  }
+  return 'TGM.One - Software development projects and blog by Aiden Johnson'
+})
+
 watchEffect(() => {
-  useHead({ title: pageTitle.value })
+  useHead({
+    title: pageTitle.value,
+    meta: [
+      {
+        name: 'description',
+        content: pageDescription.value
+      }
+    ]
+  })
 })
 </script>
 

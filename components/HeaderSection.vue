@@ -1,10 +1,10 @@
 <template>
   <header>
-    <NuxtLink :key="1" :to="'/'" class="logo"><img :src="logo"></NuxtLink>
+    <NuxtLink :key="1" :to="'/'" class="logo" aria-label="Home"><img :src="logo" alt="TGM.One Logo"></NuxtLink>
     <nav :class="{ open: isMenuOpen }">
       <NuxtLink v-for="link in menu" :key="link.id" :to="link.url">{{link.text}}</NuxtLink>
     </nav>
-    <a href="#" class="account">
+    <a href="#" class="account" aria-label="Account" title="Account">
       <UserIcon />
     </a>
     <button class="menu-toggle" @click="isMenuOpen = !isMenuOpen" aria-label="Toggle navigation">

@@ -4,23 +4,23 @@
       <router-link to="/projects" class="text-sm text-gray-300 hover:underline">← Back to projects</router-link>
     </div>
 
-    <div class="flex items-start gap-4 mb-6">
-      <img :src="projectobj.icon" alt="Project Image" class="h-14 w-14 rounded-md object-contain bg-white/10">
+    <header class="flex items-start gap-4 mb-6">
+      <img :src="projectobj.icon" :alt="`${projectobj.title} project icon`" class="h-14 w-14 rounded-md object-contain bg-white/10">
       <div>
         <h1 class="text-3xl font-extrabold">{{ projectobj.title }}</h1>
         <p class="text-gray-300 mt-2">{{ projectobj.excerpt }}</p>
       </div>
-    </div>
+    </header>
 
-    <div v-if="projectobj.tags && projectobj.tags.length" class="flex flex-wrap gap-2 mb-8">
+    <nav v-if="projectobj.tags && projectobj.tags.length" aria-label="Project tags" class="flex flex-wrap gap-2 mb-8">
       <span v-for="tag in projectobj.tags" :key="tag" class="px-2 py-1 text-xs rounded-full bg-white/10 text-gray-200">#{{ tag }}</span>
-    </div>
+    </nav>
 
-    <div class="prose prose-invert max-w-none">
+    <article class="prose prose-invert max-w-none">
       <ProjectWidget :project="projectobj" :view="'full'" :showHeader="false" />
-    </div>
+    </article>
 
-    <div v-if="relatedProjects.length" class="mt-12">
+    <aside v-if="relatedProjects.length" class="mt-12" aria-label="Related projects">
       <h2 class="text-xl font-semibold mb-4">Related projects</h2>
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <ProjectWidget 
@@ -30,13 +30,14 @@
           :view="'card'"
         />
       </div>
-    </div>
+    </aside>
   </div>
 </template>
 
 <script>
 import ProjectWidget from '~/components/ProjectWidget.vue'
 import { getProjects } from '~/lib/projectsLoader.js';
+import { useHead } from '#imports'
 
 export default {
   name: 'ProjectView',
@@ -48,6 +49,39 @@ export default {
       projectobj: getProjects()[this.$route.params.project]
     };
   },
+  watch: {
+    '$route.params.project': {
+      handler(newKey) {
+        this.projectobj = getProjects()[newKey];
+        this.updateMeta();
+      },
+      immediate: true
+    },
+    projectobj: {
+      handler() {
+        this.updateMeta();
+      },
+      immediate: true
+    }
+  },
+  mounted() {
+    this.updateMeta();
+  },
+  methods: {
+    updateMeta() {
+      if (this.projectobj) {
+        useHead({
+          title: `${this.projectobj.title} — TGM.One`,
+          meta: [
+            {
+              name: 'description',
+              content: this.projectobj.excerpt || `Learn more about ${this.projectobj.title} project on TGM.One`
+            }
+          ]
+        });
+      }
+    }
+  },
   computed: {
     relatedProjects() {
       if (!this.projectobj || !this.projectobj.related) return []
@@ -57,10 +91,5 @@ export default {
         .filter(Boolean)
     }
   },
-  watch: {
-    '$route.params.project'(newKey) {
-      this.projectobj = getProjects()[newKey];
-    }
-  }
 }
 </script>

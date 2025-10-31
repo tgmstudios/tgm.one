@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div class="flex items-center gap-3">
-          <NuxtLink :to="'/'" class="shrink-0"><img :src="logoURL" alt="Logo" class="h-10 w-10 rounded-md object-contain bg-white/10" /></NuxtLink>
+          <NuxtLink :to="'/'" class="shrink-0" aria-label="Home"><img :src="logoURL" alt="TGM.One Logo" class="h-10 w-10 rounded-md object-contain bg-white/10" /></NuxtLink>
           <div>
             <p class="font-semibold">Aiden Johnson</p>
             <p class="text-sm text-gray-400">From design and development to hosting and deploying.</p>
