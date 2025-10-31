@@ -45,9 +45,9 @@ jobs:
     - name: Build and push Website
       uses: docker/build-push-action@v6
       with:
-        context: ./frontend
+        context: .
         platforms: linux/amd64,linux/arm64
-        file: ./frontend/.docker/Dockerfile
+        file: .docker/Dockerfile
         push: true
         tags: |
           registry.tgm.one/${{ env.TAG_LATEST_WEBSITE }}
@@ -91,10 +91,10 @@ jobs:
         echo "${{ steps.extract_branch.outputs.branch }}"
         if [ ${{ steps.extract_branch.outputs.branch }} = "master" ]; then
             namespace=tgm-one
-            redeploy "frontend"
+            redeploy "tgm-one"
         elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
             namespace=tgm-one-staging
-            redeploy "frontend"
+            redeploy "tgm-one-staging"
         else
             exit 0
         fi
