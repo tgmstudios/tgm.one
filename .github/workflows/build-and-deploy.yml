@@ -50,9 +50,9 @@ jobs:
         file: .docker/Dockerfile
         push: true
         tags: |
-          registry.tgm.one/tgm-one/${{ env.TAG_LATEST_WEBSITE }}
-          registry.tgm.one/tgm-one/${{ env.TAG_COMMIT_WEBSITE }}
-        cache-from: type=registry,ref=registry.tgm.one/tgm-one/${{ env.TAG_LATEST_WEBSITE }}
+          registry.tgm.one/tgm.one/${{ env.TAG_LATEST_WEBSITE }}
+          registry.tgm.one/tgm.one/${{ env.TAG_COMMIT_WEBSITE }}
+        cache-from: type=registry,ref=registry.tgm.one/tgm.one/${{ env.TAG_LATEST_WEBSITE }}
         cache-to: type=inline
 
   deploy-rancher:
