@@ -32,7 +32,7 @@ jobs:
     - name: Generate Website Tag Names
       run: |
         echo "${{ steps.extract_branch.outputs.branch }}"
-        if [ ${{ steps.extract_branch.outputs.branch }} = "main" ]; then
+        if [ ${{ steps.extract_branch.outputs.branch }} = "master" ]; then
           echo "TAG_LATEST_WEBSITE=tgm-one:latest" >> $GITHUB_ENV
           echo "TAG_COMMIT_WEBSITE=tgm-one:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
@@ -89,7 +89,7 @@ jobs:
         }
 
         echo "${{ steps.extract_branch.outputs.branch }}"
-        if [ ${{ steps.extract_branch.outputs.branch }} = "main" ]; then
+        if [ ${{ steps.extract_branch.outputs.branch }} = "master" ]; then
             namespace=tgm-one
             redeploy "frontend"
         elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
