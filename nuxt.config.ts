@@ -41,12 +41,10 @@ export default defineNuxtConfig({
   },
   nitro: {
     prerender: {
-      routes: ['/sitemap.xml', '/logo.png', '/logo']
+      routes: ['/sitemap.xml']
     },
     routeRules: {
-      '/sitemap.xml': { prerender: true },
-      '/logo.png': { prerender: true },
-      '/logo': { prerender: true }
+      '/sitemap.xml': { prerender: true }
     }
   },
 })

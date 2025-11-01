@@ -1,5 +1,3 @@
-import { getHeader } from 'h3'
-
 export default defineEventHandler(async (event) => {
   // Always use production domain for sitemap (even in dev builds for prerendering)
   // During static generation, the host header might be localhost, so we force production
