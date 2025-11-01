@@ -70,12 +70,60 @@ export default {
   methods: {
     updateMeta() {
       if (this.projectobj) {
+        const siteUrl = 'https://tgm.one'
+        const canonicalUrl = `${siteUrl}${this.$route.path}`
+        const pageTitle = `${this.projectobj.title} — TGM.One`
+        const description = this.projectobj.excerpt || `Learn more about ${this.projectobj.title} project on TGM.One`
+        const image = this.projectobj.image ? `${siteUrl}${this.projectobj.image}` : `${siteUrl}/favicon.ico`
+        
         useHead({
-          title: `${this.projectobj.title} — TGM.One`,
+          title: pageTitle,
+          link: [
+            {
+              rel: 'canonical',
+              href: canonicalUrl
+            }
+          ],
           meta: [
             {
               name: 'description',
-              content: this.projectobj.excerpt || `Learn more about ${this.projectobj.title} project on TGM.One`
+              content: description
+            },
+            {
+              property: 'og:title',
+              content: pageTitle
+            },
+            {
+              property: 'og:description',
+              content: description
+            },
+            {
+              property: 'og:url',
+              content: canonicalUrl
+            },
+            {
+              property: 'og:type',
+              content: 'website'
+            },
+            {
+              property: 'og:image',
+              content: image
+            },
+            {
+              property: 'og:image:alt',
+              content: this.projectobj.title
+            },
+            {
+              name: 'twitter:title',
+              content: pageTitle
+            },
+            {
+              name: 'twitter:description',
+              content: description
+            },
+            {
+              name: 'twitter:image',
+              content: image
             }
           ]
         });

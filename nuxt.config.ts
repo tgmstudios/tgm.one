@@ -19,8 +19,17 @@ export default defineNuxtConfig({
       title: 'TGM.One',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Aiden Johnson - Software developer focused on building practical, reliable systems. Explore projects in RFID, IoT, web platforms, and infrastructure.' },
-        { name: 'robots', content: 'index, follow' }
+        { name: 'description', content: 'One developer building complete systems from design to deployment. Specializing in IoT, web platforms, and infrastructure - shipping secure, scalable solutions.' },
+        { name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' },
+        { name: 'author', content: 'Aiden Johnson' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'TGM.One' },
+        { property: 'og:locale', content: 'en_US' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'theme-color', content: '#0a0a0a' }
+      ],
+      link: [
+        { rel: 'canonical', href: 'https://tgm.one' }
       ],
       bodyAttrs: {
         class: 'bg-gray-950 text-gray-100'
@@ -32,10 +41,12 @@ export default defineNuxtConfig({
   },
   nitro: {
     prerender: {
-      routes: ['/sitemap.xml']
+      routes: ['/sitemap.xml', '/logo.png', '/logo']
     },
     routeRules: {
-      '/sitemap.xml': { prerender: true }
+      '/sitemap.xml': { prerender: true },
+      '/logo.png': { prerender: true },
+      '/logo': { prerender: true }
     }
   }
 })

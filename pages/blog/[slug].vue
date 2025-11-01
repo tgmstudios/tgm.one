@@ -58,11 +58,45 @@ watchEffect(() => {
       .trim()
       .slice(0, 160)
   
+  const siteUrl = 'https://tgm.one'
+  const canonicalUrl = `${siteUrl}${route.path}`
+  const pageTitle = title ? `${title} — TGM.One` : 'Blog — TGM.One'
+  
   useHead({
-    title: title ? `${title} — TGM.One` : 'Blog — TGM.One',
+    title: pageTitle,
+    link: [
+      {
+        rel: 'canonical',
+        href: canonicalUrl
+      }
+    ],
     meta: [
       {
         name: 'description',
+        content: description || 'Read this blog post on TGM.One'
+      },
+      {
+        property: 'og:title',
+        content: pageTitle
+      },
+      {
+        property: 'og:description',
+        content: description || 'Read this blog post on TGM.One'
+      },
+      {
+        property: 'og:url',
+        content: canonicalUrl
+      },
+      {
+        property: 'og:type',
+        content: 'article'
+      },
+      {
+        name: 'twitter:title',
+        content: pageTitle
+      },
+      {
+        name: 'twitter:description',
         content: description || 'Read this blog post on TGM.One'
       }
     ]

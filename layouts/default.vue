@@ -42,7 +42,7 @@ const pageTitle = computed(() => {
 const pageDescription = computed(() => {
   const path = route.path || '/'
   if (path === '/' || path === '') {
-    return 'Aiden Johnson - Software developer focused on building practical, reliable systems. Explore projects in RFID, IoT, web platforms, and infrastructure.'
+    return 'One developer building complete systems from design to deployment. Specializing in IoT, web platforms, and infrastructure — shipping secure, scalable solutions.'
   }
   if (path === '/about') {
     return 'Learn about Aiden Johnson, a software developer studying Computer Science at Penn State, building products at Telaeris, and leading technical initiatives for PSU Competitive Cybersecurity Organization.'
@@ -64,13 +64,113 @@ const pageDescription = computed(() => {
   return 'TGM.One - Software development projects and blog by Aiden Johnson'
 })
 
+const siteUrl = 'https://tgm.one'
+const canonicalUrl = computed(() => {
+  const path = route.path || '/'
+  return `${siteUrl}${path}`
+})
+
+const pageImage = computed(() => {
+  const path = route.path || '/'
+  if (path.startsWith('/project/')) {
+    const key = route.params.project
+    const proj = key ? getProjects()[key] : null
+    if (proj && proj.image) {
+      return `${siteUrl}${proj.image}`
+    }
+  }
+  return `${siteUrl}/favicon.ico`
+})
+
 watchEffect(() => {
   useHead({
     title: pageTitle.value,
+    link: [
+      {
+        rel: 'canonical',
+        href: canonicalUrl.value
+      }
+    ],
     meta: [
+      // Basic SEO
       {
         name: 'description',
         content: pageDescription.value
+      },
+      {
+        name: 'robots',
+        content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      },
+      {
+        name: 'googlebot',
+        content: 'index, follow'
+      },
+      {
+        name: 'author',
+        content: 'Aiden Johnson'
+      },
+      // Open Graph
+      {
+        property: 'og:type',
+        content: 'website'
+      },
+      {
+        property: 'og:title',
+        content: pageTitle.value
+      },
+      {
+        property: 'og:description',
+        content: pageDescription.value
+      },
+      {
+        property: 'og:url',
+        content: canonicalUrl.value
+      },
+      {
+        property: 'og:site_name',
+        content: 'TGM.One'
+      },
+      {
+        property: 'og:image',
+        content: pageImage.value
+      },
+      {
+        property: 'og:image:alt',
+        content: pageTitle.value
+      },
+      {
+        property: 'og:locale',
+        content: 'en_US'
+      },
+      // Twitter Card
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image'
+      },
+      {
+        name: 'twitter:title',
+        content: pageTitle.value
+      },
+      {
+        name: 'twitter:description',
+        content: pageDescription.value
+      },
+      {
+        name: 'twitter:image',
+        content: pageImage.value
+      },
+      {
+        name: 'twitter:image:alt',
+        content: pageTitle.value
+      },
+      // Additional SEO
+      {
+        name: 'theme-color',
+        content: '#0a0a0a'
+      },
+      {
+        name: 'format-detection',
+        content: 'telephone=no'
       }
     ]
   })
