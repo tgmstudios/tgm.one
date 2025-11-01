@@ -1,5 +1,5 @@
 <template>
-  <header>
+  <header :class="{ 'scrolled': isScrolled }">
     <NuxtLink :key="1" :to="'/'" class="logo" aria-label="Home"><img :src="logo" alt="TGM.One Logo"></NuxtLink>
     <nav :class="{ open: isMenuOpen }">
       <NuxtLink v-for="link in menu" :key="link.id" :to="link.url">{{link.text}}</NuxtLink>
@@ -25,7 +25,20 @@ export default {
   components: { UserIcon, Bars3Icon, XMarkIcon },
   data() {
     return {
-      isMenuOpen: false
+      isMenuOpen: false,
+      isScrolled: false
+    }
+  },
+  mounted() {
+    this.handleScroll()
+    window.addEventListener('scroll', this.handleScroll)
+  },
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.handleScroll)
+  },
+  methods: {
+    handleScroll() {
+      this.isScrolled = window.scrollY > 50
     }
   },
   watch: {
@@ -41,20 +54,51 @@ header {
   display: flex;
   justify-content: space-between;
   padding: 0px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
 }
+
+header.scrolled {
+  padding: 0px 20px;
+  background: rgba(10, 10, 10, 0.8);
+  border-bottom: 1px solid rgba(229, 222, 212, 0.1);
+}
+
 .logo img, .account img {
   width: 67px;
+  transition: width 0.3s ease;
 }
+
+header.scrolled .logo img {
+  width: 50px;
+}
+
 .account svg {
   width: 30px;
   height: auto;
   color: #E5DED4;
   margin-top:50%;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+header.scrolled .account svg {
+  width: 24px;
 }
 
 nav {
   padding: 30px;
+  transition: padding 0.3s ease;
 }
+
+header.scrolled nav {
+  padding: 15px;
+}
+
 nav a {
     font-weight: 800;
     letter-spacing: 1.1px;
@@ -64,7 +108,14 @@ nav a {
     text-decoration: none;
     padding: 12px;
     color: #E5DED4;
+    transition: font-size 0.3s ease, padding 0.3s ease;
 }
+
+header.scrolled nav a {
+    font-size: 14px;
+    padding: 8px;
+}
+
 nav a:hover {
     color: #0054ff;
     text-decoration: underline;
@@ -92,17 +143,23 @@ nav a.router-link-exact-active {
 @media (max-width: 768px) {
   header {
     align-items: center;
-    position: relative;
     padding: 10px 14px;
   }
+  
+  header.scrolled {
+    padding: 8px 14px;
+  }
+  
   .account {
     display: none;
   }
+  
   .menu-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
+  
   nav {
     position: absolute;
     top: 64px;
@@ -115,13 +172,23 @@ nav a.router-link-exact-active {
     z-index: 50;
     text-align: right;
   }
+  
+  header.scrolled nav {
+    top: 56px;
+  }
+  
   nav.open {
     display: block;
   }
+  
   nav a {
     display: block;
     padding: 12px 16px;
     text-align: right;
+  }
+  
+  header.scrolled nav a {
+    padding: 10px 16px;
   }
 }
 </style>
