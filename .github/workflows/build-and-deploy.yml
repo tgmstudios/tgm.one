@@ -67,7 +67,7 @@ jobs:
     - name: Redeploy Rancher
       run: |
         url='https://rancher.tgm.one'
-        cluster=local
+        cluster=c-jxhnr
         token=${{ secrets.RANCHER_TOKEN }}
 
         redeploy() {
@@ -91,7 +91,7 @@ jobs:
         echo "${{ steps.extract_branch.outputs.branch }}"
         if [ ${{ steps.extract_branch.outputs.branch }} = "master" ]; then
             namespace=tgm-one
-            redeploy "tgm-one"
+            redeploy "website"
         elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
             namespace=tgm-one-staging
             redeploy "tgm-one-staging"
