@@ -29,6 +29,14 @@ export default defineNuxtConfig({
         lang: 'en'
       }
     }
+  },
+  nitro: {
+    prerender: {
+      routes: ['/sitemap.xml']
+    },
+    routeRules: {
+      '/sitemap.xml': { prerender: true }
+    }
   }
 })
 
