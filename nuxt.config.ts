@@ -48,7 +48,7 @@ export default defineNuxtConfig({
       '/logo.png': { prerender: true },
       '/logo': { prerender: true }
     }
-  }
+  },
 })
 
 

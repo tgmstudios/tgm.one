@@ -1,15 +1,10 @@
 import { getHeader } from 'h3'
 
 export default defineEventHandler(async (event) => {
-  // Determine base URL - prefer production domain
-  const hostname = getHeader(event, 'host') || ''
-  const isDev = hostname.includes('localhost') || hostname.includes('127.0.0.1')
-  
-  // In production, always use tgm.one. In dev, use the request hostname
+  // Always use production domain for sitemap (even in dev builds for prerendering)
+  // During static generation, the host header might be localhost, so we force production
   const productionDomain = 'tgm.one'
-  const finalHostname = isDev ? hostname : productionDomain
-  const protocol = isDev ? 'http' : 'https'
-  const baseUrl = `${protocol}://${finalHostname}`
+  const baseUrl = `https://${productionDomain}`
 
   // Static pages
   const staticPages = [
