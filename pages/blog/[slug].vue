@@ -1,7 +1,7 @@
 <template>
   <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10" v-if="post">
     <nav class="mb-6" aria-label="Breadcrumb">
-      <router-link to="/blogs" class="text-sm text-gray-300 hover:underline">← Back to blog</router-link>
+      <NuxtLink to="/blogs" class="text-sm text-gray-300 hover:underline">← Back to blog</NuxtLink>
     </nav>
 
     <header>
@@ -32,10 +32,16 @@ const foligo = createFoligoClient({
 })
 
 const { data } = await useAsyncData(
-  () => foligo.getBlogById(route.params.id)
+  `blog-${route.params.slug}`,
+  () => foligo.getBlogBySlug(route.params.slug)
 )
 
 const post = computed(() => data.value || null)
+
+// If post not found, throw 404
+if (!post.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Blog post not found' })
+}
 
 // Set a content-specific page title and meta description when the post data is available
 watchEffect(() => {
@@ -148,5 +154,4 @@ const formatDate = (d) => {
 
 <style scoped>
 </style>
-
 

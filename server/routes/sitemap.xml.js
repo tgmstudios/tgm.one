@@ -52,8 +52,9 @@ export default defineEventHandler(async (event) => {
     })
     const blogs = await foligo.getBlogs()
     blogPages = blogs.map(blog => {
-      const id = blog.id || blog._id || blog.contentId
-      return `/blog/${id}`
+      // Use slug if available, fallback to ID for backwards compatibility
+      const slug = blog.slug || blog.id || blog._id || blog.contentId
+      return `/blog/${slug}`
     })
   } catch (e) {
     // If blog API fails, continue without blog pages

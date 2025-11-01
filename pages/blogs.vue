@@ -6,7 +6,7 @@
     <div v-else-if="error" class="text-red-400">Failed to load posts.</div>
 
     <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink v-for="post in posts" :key="post.id || post._id" :to="`/blog/${post.id || post._id}`" class="group bg-white/5 hover:bg-white/10 transition rounded-xl p-5 block">
+      <NuxtLink v-for="post in posts" :key="post.id || post._id" :to="`/blog/${post.slug || post.id || post._id}`" class="group bg-white/5 hover:bg-white/10 transition rounded-xl p-5 block">
         <h2 class="text-xl font-bold group-hover:underline">{{ post.title || post.name || 'Untitled Post' }}</h2>
         <p class="text-sm text-gray-300 mt-2">{{ excerpt(post) }}</p>
         <p class="text-xs text-gray-400 mt-3">{{ formatDate(post.createdAt || post.date) }}</p>
