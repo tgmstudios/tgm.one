@@ -241,6 +241,10 @@ export function useMarkdownRenderer() {
   const md = getMarkdownRenderer()
 
   return {
+    render(content) {
+      const markdown = content || ''
+      return md.render(markdown)
+    },
     renderContent(content) {
       const markdown = content || ''
       const env = { mermaidBlocks: [] }

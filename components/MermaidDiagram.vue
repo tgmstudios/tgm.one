@@ -1,10 +1,17 @@
 <template>
-  <div ref="containerRef" class="mermaid-container" :class="{ 'mermaid-loading': isLoading, 'mermaid-error': hasError }">
-    <div v-if="isLoading" class="mermaid-loading-state">
+  <div class="mermaid-container">
+    <div
+      v-if="isLoading"
+      class="mermaid-loading-state"
+    >
       <div class="mermaid-spinner"></div>
       <span>Rendering diagram...</span>
     </div>
-    <div v-else-if="hasError" class="mermaid-error-state">
+
+    <div
+      v-else-if="hasError"
+      class="mermaid-error-state"
+    >
       <p class="mermaid-error-title">Error rendering diagram</p>
       <pre class="mermaid-error-message">{{ errorMessage }}</pre>
       <details class="mermaid-error-details">
@@ -12,12 +19,17 @@
         <pre class="mermaid-error-code">{{ code }}</pre>
       </details>
     </div>
-    <div v-else ref="diagramRef" class="mermaid-diagram"></div>
+
+    <div
+      ref="diagramRef"
+      class="mermaid-diagram"
+      :class="{ 'mermaid-diagram-hidden': isLoading || hasError }"
+    ></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 
 const props = defineProps({
   code: {
@@ -30,67 +42,56 @@ const props = defineProps({
   }
 })
 
-const containerRef = ref(null)
 const diagramRef = ref(null)
 const isLoading = ref(true)
 const hasError = ref(false)
 const errorMessage = ref('')
 let rendered = false
 
+const ensureMermaid = async () => {
+  if (typeof window === 'undefined') return null
+  if (!window.mermaid) {
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+  return window.mermaid || null
+}
+
 const renderDiagram = async () => {
   if (rendered || !process.client) return
-  
+
   try {
     isLoading.value = true
     hasError.value = false
     errorMessage.value = ''
-    
-    // Wait for mermaid to be available
-    if (typeof window === 'undefined' || !window.mermaid) {
-      // Wait a bit and try again
-      await new Promise(resolve => setTimeout(resolve, 100))
-      if (!window.mermaid) {
-        throw new Error('Mermaid is not available. Make sure the mermaid plugin is loaded.')
-      }
+
+    const mermaid = await ensureMermaid()
+    if (!mermaid) {
+      throw new Error('Mermaid is not available. Make sure the mermaid plugin is loaded.')
     }
-    
-    const mermaid = window.mermaid
-    
-    // Mermaid should already be initialized by the plugin
-    // Just ensure it's available
+
     if (!mermaid.initialized) {
-      console.warn('Mermaid not initialized by plugin, initializing now...')
-      // Fallback initialization (shouldn't be needed if plugin loads correctly)
       mermaid.initialize({
         startOnLoad: false,
         theme: 'dark'
       })
       mermaid.initialized = true
     }
-    
-    // Clean the code
+
     const cleanCode = props.code.trim()
-    
     if (!cleanCode) {
       throw new Error('Empty mermaid diagram code')
     }
-    
-    // Wait for DOM to be ready
+
     await nextTick()
-    
     if (!diagramRef.value) {
       throw new Error('Diagram container not found')
     }
-    
-    // Render the diagram
+
     const { svg } = await mermaid.render(props.id, cleanCode)
-    
-    // Insert the SVG
     diagramRef.value.innerHTML = svg
-    
+
     rendered = true
     isLoading.value = false
-    
   } catch (error) {
     console.error('Error rendering mermaid diagram:', error)
     hasError.value = true
@@ -101,7 +102,6 @@ const renderDiagram = async () => {
 
 onMounted(async () => {
   if (process.client) {
-    // Small delay to ensure mermaid plugin is loaded
     await new Promise(resolve => setTimeout(resolve, 50))
     await renderDiagram()
   }
@@ -110,6 +110,8 @@ onMounted(async () => {
 watch(() => props.code, async () => {
   if (process.client) {
     rendered = false
+    hasError.value = false
+    errorMessage.value = ''
     if (diagramRef.value) {
       diagramRef.value.innerHTML = ''
     }
@@ -120,11 +122,8 @@ watch(() => props.code, async () => {
 
 <style scoped>
 .mermaid-container {
-  @apply my-8 rounded-lg overflow-x-auto;
+  @apply my-8 rounded-lg overflow-x-auto relative;
   min-height: 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background: transparent;
   padding: 1.5rem;
 }
@@ -134,6 +133,10 @@ watch(() => props.code, async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.mermaid-diagram-hidden {
+  display: none;
 }
 
 .mermaid-diagram :deep(svg) {
