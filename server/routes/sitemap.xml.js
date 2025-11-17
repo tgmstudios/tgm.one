@@ -41,7 +41,8 @@ export default defineEventHandler(async (event) => {
     const { createFoligoClient } = await import('~/lib/foligoClient.js')
     const foligo = createFoligoClient({
       foligoBaseUrl: config.public.foligoBaseUrl,
-      foligoProjectId: config.public.foligoProjectId
+      foligoProjectId: config.public.foligoProjectId,
+      foligoSubdomain: config.public.foligoSubdomain
     })
     const blogs = await foligo.getBlogs()
     blogPages = blogs.map(blog => {

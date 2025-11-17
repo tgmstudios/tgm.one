@@ -21,7 +21,8 @@ const config = useRuntimeConfig()
 const { createFoligoClient } = await import('~/lib/foligoClient.js')
 const foligo = createFoligoClient({
   foligoBaseUrl: config.public.foligoBaseUrl,
-  foligoProjectId: config.public.foligoProjectId
+  foligoProjectId: config.public.foligoProjectId,
+  foligoSubdomain: config.public.foligoSubdomain
 })
 
 const { data, pending, error } = await useAsyncData('blogs', () => foligo.getBlogs())
