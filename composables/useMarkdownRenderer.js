@@ -237,17 +237,44 @@ function createHtmlSegmentsFromPreRenderedHtml(html) {
   return segments
 }
 
+function escapeHtml(value = '') {
+  return (value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function convertSegmentsToHtml(segments = []) {
+  return segments.map(segment => {
+    if (segment.type === 'html') {
+      return segment.content
+    }
+    const escapedCode = escapeHtml(segment.code)
+    return `<pre class="mermaid" data-mermaid-code="${escapedCode}">${escapedCode}</pre>`
+  }).join('')
+}
+
 export function useMarkdownRenderer() {
   const md = getMarkdownRenderer()
 
+  const renderContent = (content) => {
+    const markdown = content || ''
+    const env = { mermaidBlocks: [] }
+    const html = md.render(markdown, env)
+    return {
+      segments: splitHtmlWithMermaidPlaceholders(html, env.mermaidBlocks)
+    }
+  }
+
   return {
-    renderContent(content) {
+    renderContent,
+    render(content) {
       const markdown = content || ''
-      const env = { mermaidBlocks: [] }
-      const html = md.render(markdown, env)
-      return {
-        segments: splitHtmlWithMermaidPlaceholders(html, env.mermaidBlocks)
-      }
+      if (!markdown) return ''
+      const { segments } = renderContent(markdown)
+      return convertSegmentsToHtml(segments)
     },
     renderHtml(html) {
       return {
