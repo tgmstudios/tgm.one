@@ -45,9 +45,27 @@ export default defineNuxtConfig({
       routes: ['/sitemap.xml']
     },
     routeRules: {
-      '/sitemap.xml': { prerender: true }
+      '/sitemap.xml': { prerender: true },
+      // Cache API routes
+      '/api/**': { cors: true, headers: { 'cache-control': 's-maxage=300' } },
+      // Static pages
+      '/': { prerender: true },
+      '/about': { prerender: true },
+      // Dynamic pages with ISR
+      '/projects': { isr: 3600 },
+      '/blogs': { isr: 3600 },
+      '/project/**': { isr: 3600 },
+      '/blog/**': { isr: 3600 }
     }
   },
+  experimental: {
+    payloadExtraction: false
+  },
+  vite: {
+    optimizeDeps: {
+      include: ['markdown-it']
+    }
+  }
 })
 
 

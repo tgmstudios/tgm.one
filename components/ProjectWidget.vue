@@ -15,38 +15,32 @@
                 <img :src="project.icon" :alt="`${project.title} icon`" class="h-16 w-16 rounded-md object-contain bg-white/10 mb-4">
                 <p class="text-base text-gray-300 mb-6">{{ project.excerpt }}</p>
             </div>
-            <div v-if="view === 'full'" v-html="renderedContent"></div>
+            <ContentRenderer 
+              v-if="view === 'full'"
+              :content="project.content || project.body || project.markdown || ''"
+              :html="project.html"
+            />
         </div>
     </div>
 </template>
 
-<script>
-import MarkdownIt from 'markdown-it'
+<script setup>
+import ContentRenderer from '~/components/ContentRenderer.vue'
 
-export default {
-    name: 'ProjectWidget',
-    props: {
-        project: {
-            type: Object,
-            required: true
-        },
-        view: {
-            type: String,
-            default: 'full'
-        },
-        showHeader: {
-            type: Boolean,
-            default: true
-        }
+defineProps({
+    project: {
+        type: Object,
+        required: true
     },
-    computed: {
-        renderedContent() {
-            if (!this.project || !this.project.content) return ''
-            const md = new MarkdownIt()
-            return md.render(this.project.content)
-        }
+    view: {
+        type: String,
+        default: 'full'
+    },
+    showHeader: {
+        type: Boolean,
+        default: true
     }
-}
+})
 </script>
 
 <style scoped>

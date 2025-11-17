@@ -12,27 +12,26 @@ export default defineEventHandler(async (event) => {
     '/blogs'
   ]
 
-  // Get dynamic project pages
-  // Note: We can't import projectsLoader.js directly in server routes because it imports image assets
-  // Instead, we list the project keys directly (they match the keys in projectsLoader.js)
-  const projectKeys = [
-    'tagaby',
-    'android-ota-update',
-    'perfect-portion',
-    'campus-calendar',
-    'telaeris-website',
-    'xpressrfid-ecommerce',
-    'squarebrain',
-    'saints-verify',
-    'r2d2-replica',
-    'red-bird-pantry',
-    'tgm-auth',
-    'tgm-mine',
-    'tgmusic-bot',
-    'tgmmc',
-    'site-generator'
-  ]
-  const projectPages = projectKeys.map(key => `/project/${key}`)
+  // Get dynamic project pages from API
+  let projectPages = []
+  try {
+    const config = useRuntimeConfig()
+    const { createFoligoClient } = await import('~/lib/foligoClient.js')
+    const foligo = createFoligoClient({
+      foligoBaseUrl: config.public.foligoBaseUrl,
+      foligoProjectId: config.public.foligoProjectId,
+      foligoSubdomain: config.public.foligoSubdomain
+    })
+    const projects = await foligo.getProjects()
+    projectPages = projects.map(project => {
+      // Use slug if available, fallback to ID for backwards compatibility
+      const slug = project.slug || project.id || project._id || project.contentId
+      return `/project/${slug}`
+    })
+  } catch (e) {
+    // If project API fails, continue without project pages
+    console.error('Failed to fetch projects for sitemap:', e)
+  }
 
   // Get blog posts from API
   let blogPages = []

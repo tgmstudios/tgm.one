@@ -18,10 +18,11 @@ const { headerMenu } = useHeaderMenu()
 import { useRoute } from '#app'
 import { computed, watchEffect } from 'vue'
 import { useHead } from '#imports'
-import { getProjects } from '~/lib/projectsLoader.js'
 
 const route = useRoute()
 const siteName = 'TGM.One'
+
+// Removed project cache - pages handle their own meta tags
 
 const pageTitle = computed(() => {
   const path = route.path || '/'
@@ -30,9 +31,7 @@ const pageTitle = computed(() => {
   if (path === '/projects') return `Projects — ${siteName}`
   if (path === '/blogs') return `Blog — ${siteName}`
   if (path.startsWith('/project/')) {
-    const key = route.params.project
-    const proj = key ? getProjects()[key] : null
-    if (proj && proj.title) return `${proj.title} — ${siteName}`
+    // Project pages handle their own meta tags, but provide fallback
     return `Project — ${siteName}`
   }
   if (path.startsWith('/blog/')) return `Blog — ${siteName}`
@@ -54,11 +53,7 @@ const pageDescription = computed(() => {
     return 'Read blog posts about software development, technology, and technical insights from Aiden Johnson at TGM.One.'
   }
   if (path.startsWith('/project/')) {
-    const key = route.params.project
-    const proj = key ? getProjects()[key] : null
-    if (proj && proj.excerpt) {
-      return proj.excerpt
-    }
+    // Project pages handle their own meta tags, but provide fallback
     return `Project details and information from TGM.One`
   }
   return 'TGM.One - Software development projects and blog by Aiden Johnson'
@@ -73,11 +68,8 @@ const canonicalUrl = computed(() => {
 const pageImage = computed(() => {
   const path = route.path || '/'
   if (path.startsWith('/project/')) {
-    const key = route.params.project
-    const proj = key ? getProjects()[key] : null
-    if (proj && proj.image) {
-      return `${siteUrl}${proj.image}`
-    }
+    // Project pages handle their own meta tags, but provide fallback
+    return `${siteUrl}/favicon.ico`
   }
   return `${siteUrl}/favicon.ico`
 })

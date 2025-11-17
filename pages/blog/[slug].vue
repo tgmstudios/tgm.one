@@ -4,7 +4,7 @@
       <NuxtLink to="/blogs" class="text-sm text-gray-300 hover:underline">← Back to blog</NuxtLink>
     </nav>
 
-    <header>
+    <header class="mb-6">
       <h1 class="text-3xl font-extrabold">{{ post.title || post.name || 'Untitled Post' }}</h1>
       <p v-if="post.createdAt || post.date || post.author" class="text-sm text-gray-400 mt-2">
         <time v-if="post.createdAt || post.date" :datetime="post.createdAt || post.date">{{ formatDate(post.createdAt || post.date) }}</time>
@@ -12,15 +12,61 @@
       </p>
 
       <div v-if="post.excerpt || post.description" class="mt-4 text-gray-300">{{ post.excerpt || post.description }}</div>
+
+      <!-- Tags -->
+      <nav v-if="post.tags && post.tags.length" aria-label="Post tags" class="flex flex-wrap gap-2 mt-4">
+        <span 
+          v-for="tag in (Array.isArray(post.tags) ? post.tags : [post.tags])" 
+          :key="typeof tag === 'object' ? tag.id : tag" 
+          class="px-2 py-1 text-xs rounded-full bg-white/10 text-gray-200"
+        >
+          #{{ typeof tag === 'object' ? tag.name : tag }}
+        </span>
+      </nav>
+
+      <!-- Linked Skills -->
+      <nav v-if="post.linkedSkills && post.linkedSkills.length" aria-label="Post skills" class="flex flex-wrap gap-2 mt-4">
+        <span 
+          v-for="skill in post.linkedSkills" 
+          :key="skill.id || skill" 
+          class="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+        >
+          {{ typeof skill === 'object' ? skill.name : skill }}
+        </span>
+      </nav>
     </header>
 
-    <div class="prose prose-invert max-w-none mt-8" v-html="rendered" ref="contentRef"></div>
+    <ContentRenderer 
+      :content="post.content || post.body || post.markdown || ''"
+      :html="post.html"
+    />
+
+    <!-- Related Posts -->
+    <aside v-if="relatedPosts.length" class="mt-12" aria-label="Related posts">
+      <h2 class="text-xl font-semibold mb-4">Related posts</h2>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <NuxtLink 
+          v-for="relatedPost in relatedPosts" 
+          :key="relatedPost.id || relatedPost.slug"
+          :to="`/blog/${relatedPost.slug || relatedPost.id}`"
+          class="group bg-white/5 hover:bg-white/10 transition rounded-xl p-5 block"
+        >
+          <h3 class="text-lg font-bold group-hover:underline mb-2">{{ relatedPost.title || relatedPost.name || 'Untitled Post' }}</h3>
+          <p v-if="relatedPost.excerpt || relatedPost.description" class="text-sm text-gray-300 mb-2">
+            {{ relatedPost.excerpt || relatedPost.description }}
+          </p>
+          <p v-if="relatedPost.createdAt || relatedPost.date" class="text-xs text-gray-400">
+            {{ formatDate(relatedPost.createdAt || relatedPost.date) }}
+          </p>
+        </NuxtLink>
+      </div>
+    </aside>
   </article>
 </template>
 
 <script setup>
-import MarkdownIt from 'markdown-it'
-import { computed, watchEffect, onMounted, nextTick, ref } from 'vue'
+import ContentRenderer from '~/components/ContentRenderer.vue'
+import { computed, watchEffect } from 'vue'
 import { useHead } from '#imports'
 
 const route = useRoute()
@@ -37,12 +83,116 @@ const { data } = await useAsyncData(
   () => foligo.getBlogBySlug(route.params.slug)
 )
 
-const post = computed(() => data.value || null)
+const post = computed(() => {
+  if (!data.value) return null
+  return {
+    ...data.value,
+    tags: data.value.tags || [],
+    linkedSkills: data.value.linkedSkills || [],
+    contentLinks: data.value.contentLinks || []
+  }
+})
 
 // If post not found, throw 404
 if (!post.value) {
   throw createError({ statusCode: 404, statusMessage: 'Blog post not found' })
 }
+
+// Fetch all blogs for related posts (lazy, client-side only)
+const { data: allBlogsData } = await useAsyncData(
+  'all-blogs', 
+  () => foligo.getBlogs(),
+  {
+    lazy: true,
+    server: false,
+    default: () => []
+  }
+)
+
+// Find related posts using contentLinks or by matching tags/skills (memoized)
+const relatedPosts = computed(() => {
+  if (!post.value || !allBlogsData.value || allBlogsData.value.length === 0) return []
+  
+  const currentPostId = post.value.id || post.value._id || post.value.contentId
+  if (!currentPostId) return []
+  
+  const relatedIds = new Set()
+  
+  // Use contentLinks if available (fastest path)
+  if (post.value.contentLinks && Array.isArray(post.value.contentLinks)) {
+    for (const link of post.value.contentLinks) {
+      if (link.sourceId === currentPostId && link.targetType === 'BLOG') {
+        relatedIds.add(link.targetId)
+      } else if (link.targetId === currentPostId && link.sourceType === 'BLOG') {
+        relatedIds.add(link.sourceId)
+      }
+    }
+  }
+  
+  // If we already have enough from contentLinks, return early
+  if (relatedIds.size >= 6) {
+    return Array.from(relatedIds)
+      .slice(0, 6)
+      .map(id => allBlogsData.value.find(b => {
+        const bid = b.id || b._id || b.contentId
+        return bid === id
+      }))
+      .filter(Boolean)
+      .map(blog => ({
+        ...blog,
+        slug: blog.slug || blog.id || blog._id
+      }))
+  }
+  
+  // Build tag/skill lookup sets once
+  const currentTagIds = new Set((post.value.tags || []).map(t => typeof t === 'object' ? t.id : t).filter(Boolean))
+  const currentSkillIds = new Set((post.value.linkedSkills || []).map(s => typeof s === 'object' ? s.id : s).filter(Boolean))
+  
+  // Only process if we have tags or skills to match
+  if (currentTagIds.size > 0 || currentSkillIds.size > 0) {
+    for (const blog of allBlogsData.value) {
+      const blogId = blog.id || blog._id || blog.contentId
+      if (!blogId || blogId === currentPostId || relatedIds.has(blogId)) continue
+      
+      // Check for matching tags
+      if (currentTagIds.size > 0 && blog.tags) {
+        for (const tag of blog.tags) {
+          const tagId = typeof tag === 'object' ? tag.id : tag
+          if (tagId && currentTagIds.has(tagId)) {
+            relatedIds.add(blogId)
+            break
+          }
+        }
+      }
+      
+      // Check for matching skills if not already added
+      if (relatedIds.size < 6 && currentSkillIds.size > 0 && blog.linkedSkills) {
+        for (const skill of blog.linkedSkills) {
+          const skillId = typeof skill === 'object' ? skill.id : skill
+          if (skillId && currentSkillIds.has(skillId)) {
+            relatedIds.add(blogId)
+            break
+          }
+        }
+      }
+      
+      if (relatedIds.size >= 6) break
+    }
+  }
+  
+  // Convert to array and limit to 6 posts
+  return Array.from(relatedIds)
+    .slice(0, 6)
+    .map(id => allBlogsData.value.find(b => {
+      const bid = b.id || b._id || b.contentId
+      return bid === id
+    }))
+    .filter(Boolean)
+    .map(blog => ({
+      ...blog,
+      slug: blog.slug || blog.id || blog._id
+    }))
+})
 
 // Set a content-specific page title and meta description when the post data is available
 watchEffect(() => {
@@ -104,203 +254,11 @@ watchEffect(() => {
   })
 })
 
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-  highlight(str, lang) {
-    const safeLang = (lang || '').toLowerCase()
-    
-    // Handle mermaid diagrams - return as a pre with mermaid class (no code wrapper)
-    if (safeLang === 'mermaid') {
-      // Escape HTML entities in the mermaid code to prevent issues
-      const esc = (s) => s
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-      return `<pre class="mermaid">${esc(str)}</pre>`
-    }
-    
-    // Preserve code blocks with language class for client-side highlighters if present
-    const className = safeLang ? `language-${safeLang}` : ''
-    const esc = (s) => s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-    return `<pre class="${className}"><code class="${className}">${esc(str)}</code></pre>`
-  }
-})
-
-// Add target/_blank and rel to external links
-const defaultLinkRender = md.renderer.rules.link_open || function(tokens, idx, options, env, self) {
-  return self.renderToken(tokens, idx, options)
-}
-md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
-  const token = tokens[idx]
-  const hrefIdx = token.attrIndex('href')
-  const href = hrefIdx >= 0 ? token.attrs[hrefIdx][1] : ''
-  const isExternal = /^https?:\/\//i.test(href)
-  if (isExternal) {
-    token.attrSet('target', '_blank')
-    token.attrSet('rel', 'noopener noreferrer')
-  }
-  return defaultLinkRender(tokens, idx, options, env, self)
-}
-
-// Make headings linkable with ids
-function slugify(text) {
-  return (text || '')
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-}
-const headingOpen = md.renderer.rules.heading_open || function(tokens, idx, options, env, self) {
-  return self.renderToken(tokens, idx, options)
-}
-md.renderer.rules.heading_open = function(tokens, idx, options, env, self) {
-  const next = tokens[idx + 1]
-  if (next && next.type === 'inline') {
-    const text = next.children?.filter(t => t.type === 'text' || t.type === 'code_inline').map(t => t.content).join(' ') || ''
-    const id = slugify(text)
-    if (id) {
-      tokens[idx].attrSet('id', id)
-    }
-  }
-  return headingOpen(tokens, idx, options, env, self)
-}
-
-// Add classes to images for consistent styling and ensure alt attributes
-const imageRender = md.renderer.rules.image || function(tokens, idx, options, env, self) {
-  return self.renderToken(tokens, idx, options)
-}
-md.renderer.rules.image = function(tokens, idx, options, env, self) {
-  const token = tokens[idx]
-  token.attrJoin('class', 'rounded-lg shadow-sm')
-  // Ensure alt attribute exists (markdown-it usually handles this, but ensure it's present)
-  const altIdx = token.attrIndex('alt')
-  if (altIdx < 0 || !token.attrs[altIdx][1]) {
-    token.attrSet('alt', 'Blog post image')
-  }
-  return imageRender(tokens, idx, options, env, self)
-}
-const rendered = computed(() => {
-  if (!post.value) return ''
-  // Always process through markdown to handle mermaid diagrams and other custom rendering
-  const raw = post.value.content || post.value.body || post.value.markdown || ''
-  if (!raw && post.value.html) {
-    // Only use pre-rendered HTML as fallback if no markdown content exists
-    return post.value.html
-  }
-  return md.render(raw)
-})
-
-const contentRef = ref(null)
-
-onMounted(async () => {
-  if (process.client && contentRef.value && window.mermaid) {
-    await nextTick()
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    const mermaidElements = contentRef.value.querySelectorAll('pre.mermaid:not([data-processed])')
-    
-    mermaidElements.forEach(async (el) => {
-      const code = el.textContent || el.innerText || ''
-      if (code.trim()) {
-        el.setAttribute('data-processed', 'true')
-        const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        el.id = id
-        
-        try {
-          const { svg } = await window.mermaid.render(id, code.trim())
-          el.innerHTML = svg
-        } catch (error) {
-          console.error('Error rendering mermaid:', error)
-          el.innerHTML = `<div style="color: #ef4444; padding: 1rem;">Error rendering diagram: ${error.message}</div>`
-        }
-      }
-    })
-  }
-})
 
 const formatDate = (d) => {
   try { return new Date(d).toLocaleDateString() } catch { return '' }
 }
 </script>
 
-<style scoped>
-/* Mermaid diagram styling for dark mode */
-:deep(pre.mermaid) {
-  @apply my-8 rounded-lg overflow-x-auto;
-  padding: 2rem;
-  background: rgba(31, 41, 55, 0.5);
-  border: 1px solid rgba(75, 85, 99, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(8px);
-}
-
-:deep(pre.mermaid svg) {
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-}
-
-/* Improve text readability in mermaid diagrams */
-:deep(pre.mermaid svg text) {
-  fill: #F9FAFB !important;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-}
-
-/* Style mermaid nodes and shapes */
-:deep(pre.mermaid svg .node rect),
-:deep(pre.mermaid svg .node circle),
-:deep(pre.mermaid svg .node ellipse),
-:deep(pre.mermaid svg .node polygon) {
-  stroke: #3B82F6 !important;
-  stroke-width: 2px !important;
-}
-
-/* Style mermaid edges/arrows */
-:deep(pre.mermaid svg .edgePath path),
-:deep(pre.mermaid svg .edgePath .path) {
-  stroke: #60A5FA !important;
-  stroke-width: 2px !important;
-}
-
-:deep(pre.mermaid svg marker) {
-  fill: #60A5FA !important;
-}
-
-/* Ensure proper contrast for labels */
-:deep(pre.mermaid svg .label text) {
-  fill: #F9FAFB !important;
-}
-
-/* Style sequence diagram actors */
-:deep(pre.mermaid svg .actor) {
-  fill: #1F2937 !important;
-  stroke: #3B82F6 !important;
-}
-
-/* Style gantt charts */
-:deep(pre.mermaid svg .section0),
-:deep(pre.mermaid svg .section1),
-:deep(pre.mermaid svg .section2),
-:deep(pre.mermaid svg .section3) {
-  fill: #1F2937 !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  :deep(pre.mermaid) {
-    padding: 1rem;
-    margin: 1.5rem 0;
-  }
-}
-</style>
 
 

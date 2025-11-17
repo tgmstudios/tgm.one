@@ -6,10 +6,33 @@
     <div v-else-if="error" class="text-red-400">Failed to load posts.</div>
 
     <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink v-for="post in posts" :key="post.id || post._id" :to="`/blog/${post.slug || post.id || post._id}`" class="group bg-white/5 hover:bg-white/10 transition rounded-xl p-5 block">
-        <h2 class="text-xl font-bold group-hover:underline">{{ post.title || post.name || 'Untitled Post' }}</h2>
-        <p class="text-sm text-gray-300 mt-2">{{ excerpt(post) }}</p>
-        <p class="text-xs text-gray-400 mt-3">{{ formatDate(post.createdAt || post.date) }}</p>
+      <NuxtLink v-for="post in posts" :key="post.id || post._id" :to="`/blog/${post.slug || post.id || post._id}`" class="group bg-white/5 hover:bg-white/10 transition rounded-xl p-5 block flex flex-col">
+        <h2 class="text-xl font-bold group-hover:underline mb-2">{{ post.title || post.name || 'Untitled Post' }}</h2>
+        <p class="text-sm text-gray-300 mb-3 flex-1">{{ excerpt(post) }}</p>
+        
+        <!-- Tags -->
+        <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-1 mb-2">
+          <span 
+            v-for="tag in (Array.isArray(post.tags) ? post.tags.slice(0, 3) : [post.tags])" 
+            :key="typeof tag === 'object' ? tag.id : tag" 
+            class="px-2 py-0.5 text-xs rounded-full bg-white/10 text-gray-300"
+          >
+            #{{ typeof tag === 'object' ? tag.name : tag }}
+          </span>
+        </div>
+        
+        <!-- Skills -->
+        <div v-if="post.linkedSkills && post.linkedSkills.length" class="flex flex-wrap gap-1 mb-2">
+          <span 
+            v-for="skill in post.linkedSkills.slice(0, 2)" 
+            :key="skill.id || skill" 
+            class="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+          >
+            {{ typeof skill === 'object' ? skill.name : skill }}
+          </span>
+        </div>
+        
+        <p class="text-xs text-gray-400 mt-auto">{{ formatDate(post.createdAt || post.date) }}</p>
       </NuxtLink>
     </div>
   </div>
@@ -25,7 +48,10 @@ const foligo = createFoligoClient({
   foligoSubdomain: config.public.foligoSubdomain
 })
 
-const { data, pending, error } = await useAsyncData('blogs', () => foligo.getBlogs())
+const { data, pending, error } = await useAsyncData(
+  'blogs', 
+  () => foligo.getBlogs()
+)
 const posts = computed(() => data.value || [])
 
 const formatDate = (d) => {
