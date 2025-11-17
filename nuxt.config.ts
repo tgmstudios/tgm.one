@@ -56,6 +56,11 @@ export default defineNuxtConfig({
       '/blogs': { isr: 3600 },
       '/project/**': { isr: 3600 },
       '/blog/**': { isr: 3600 }
+    },
+    // Trust proxy headers for reverse proxy setups
+    // This ensures Nitro respects X-Forwarded-* headers
+    experimental: {
+      wasm: true
     }
   },
   experimental: {
