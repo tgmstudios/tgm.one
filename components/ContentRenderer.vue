@@ -1,9 +1,9 @@
 <template>
-  <div class="prose prose-invert max-w-none" v-html="rendered" ref="contentRef"></div>
+  <div class="prose prose-invert max-w-none" ref="contentRef"></div>
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watchEffect } from 'vue'
+import { computed, nextTick, ref, watch, onMounted } from 'vue'
 import { useMarkdownRenderer } from '~/composables/useMarkdownRenderer.js'
 
 const props = defineProps({
@@ -23,7 +23,8 @@ const contentRef = ref(null)
 // Render markdown (same on server and client, mermaid processed client-side only)
 const rendered = computed(() => {
   const side = process.client ? 'CLIENT' : 'SERVER'
-  console.log(`[${side}] ContentRenderer props:`, {
+  const timestamp = Date.now()
+  console.log(`[${side}] ContentRenderer computed @ ${timestamp}:`, {
     hasContent: !!props.content,
     hasHtml: !!props.html,
     contentLength: props.content?.length || 0,
@@ -34,17 +35,17 @@ const rendered = computed(() => {
   // Only use pre-rendered HTML if no content is available
   if (props.content) {
     const result = render(props.content)
-    console.log(`[${side}] Rendered from markdown, length:`, result.length, 'has mermaid:', result.includes('class="mermaid"'))
+    console.log(`[${side}] Rendered @ ${timestamp}, length:`, result.length, 'has mermaid:', result.includes('class="mermaid"'))
     if (result.includes('class="mermaid"')) {
       const match = result.match(/<pre class="mermaid"[^>]*>([\s\S]*?)<\/pre>/)
       if (match) {
-        console.log(`[${side}] Mermaid content sample:`, match[0].substring(0, 300))
+        console.log(`[${side}] Mermaid sample @ ${timestamp}:`, match[0].substring(0, 150))
       }
     }
     return result
   }
   if (props.html) {
-    console.log(`[${side}] Using pre-rendered HTML`)
+    console.log(`[${side}] Using pre-rendered HTML @ ${timestamp}`)
     return props.html
   }
   return ''
@@ -89,17 +90,41 @@ const processMermaid = async () => {
   }
 }
 
-// Use watchEffect with flush:'post' as the primary mechanism
-// This automatically tracks rendered.value and contentRef.value as dependencies
-watchEffect(async () => {
-  // Track dependencies: rendered content and contentRef
-  const currentRendered = rendered.value
-  const hasRef = contentRef.value
+// Wait for component to be mounted before processing mermaid
+// This prevents modifying DOM during hydration which causes mismatches
+let mounted = false
+onMounted(async () => {
+  mounted = true
+  console.log('[CLIENT] Component mounted')
   
-  if (process.client && hasRef && currentRendered) {
+  // Manually set innerHTML once (not using v-html to avoid Vue re-renders wiping it)
+  if (contentRef.value) {
+    contentRef.value.innerHTML = rendered.value
+    console.log('[CLIENT] Set initial HTML')
+  }
+  
+  // Then process mermaid
+  await processMermaid()
+  console.log('[CLIENT] onMounted completed')
+})
+
+// Watch for actual content changes (for client-side navigation)
+watch(() => [props.content, props.html], async ([newContent, newHtml], [oldContent, oldHtml]) => {
+  console.log('[CLIENT] Props watch triggered:', { 
+    mounted,
+    contentChanged: newContent !== oldContent,
+    htmlChanged: newHtml !== oldHtml
+  })
+  
+  // Only process if mounted and content actually changed
+  if (process.client && mounted && contentRef.value && (newContent !== oldContent || newHtml !== oldHtml)) {
+    console.log('[CLIENT] Props changed, updating HTML and processing mermaid')
+    // Update HTML manually
+    contentRef.value.innerHTML = rendered.value
+    // Then process mermaid
     await processMermaid()
   }
-}, { flush: 'post' })
+}, { flush: 'post', immediate: false })
 </script>
 
 <style scoped>
