@@ -496,16 +496,26 @@ const certifications = computed(() => {
 // Collect all skills from experiences, projects, and blogs, grouped by category
 const skillsByCategory = computed(() => {
   const skillMap = new Map()
+  const seenSkills = new Set() // Track seen skills by name to avoid duplicates
   
   // Helper to add skill to category
   const addSkill = (skill, category = 'Other') => {
     const skillName = typeof skill === 'object' ? (skill.name || skill) : skill
     if (!skillName) return
     
+    // Create a unique key for the skill (category + name)
+    const skillKey = `${category}:${skillName.toLowerCase().trim()}`
+    
+    // Skip if we've already seen this skill
+    if (seenSkills.has(skillKey)) return
+    
+    // Mark as seen
+    seenSkills.add(skillKey)
+    
     if (!skillMap.has(category)) {
-      skillMap.set(category, new Set())
+      skillMap.set(category, [])
     }
-    skillMap.get(category).add(skill)
+    skillMap.get(category).push(skill)
   }
   
   // Collect from experiences
@@ -552,10 +562,10 @@ const skillsByCategory = computed(() => {
     })
   }
   
-  // Convert Sets to Arrays and sort
+  // Sort skills within each category
   const result = {}
   skillMap.forEach((skills, category) => {
-    result[category] = Array.from(skills).sort((a, b) => {
+    result[category] = skills.sort((a, b) => {
       const nameA = typeof a === 'object' ? a.name : a
       const nameB = typeof b === 'object' ? b.name : b
       return nameA.localeCompare(nameB)
