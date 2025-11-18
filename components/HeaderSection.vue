@@ -4,9 +4,9 @@
     <nav :class="{ open: isMenuOpen }">
       <NuxtLink v-for="link in menu" :key="link.id" :to="link.url">{{link.text}}</NuxtLink>
     </nav>
-    <a href="#" class="account" aria-label="Account" title="Account">
-      <UserIcon />
-    </a>
+    <NuxtLink to="/search" class="account" aria-label="Search" title="Search">
+      <MagnifyingGlassIcon />
+    </NuxtLink>
     <button class="menu-toggle" @click="isMenuOpen = !isMenuOpen" aria-label="Toggle navigation">
       <component :is="isMenuOpen ? 'XMarkIcon' : 'Bars3Icon'" />
     </button>
@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/solid'
+import { MagnifyingGlassIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/solid'
 
 export default {
   name: 'HeaderSection',
@@ -22,7 +22,7 @@ export default {
     menu: Array,
     logo: String
   },
-  components: { UserIcon, Bars3Icon, XMarkIcon },
+  components: { MagnifyingGlassIcon, Bars3Icon, XMarkIcon },
   data() {
     return {
       isMenuOpen: false,
@@ -53,6 +53,7 @@ export default {
 header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0px 20px;
   position: sticky;
   top: 0;
@@ -61,12 +62,14 @@ header {
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   border-bottom: 1px solid transparent;
+  min-height: 67px;
 }
 
 header.scrolled {
   padding: 0px 20px;
   background: rgba(10, 10, 10, 0.8);
   border-bottom: 1px solid rgba(229, 222, 212, 0.1);
+  min-height: 50px;
 }
 
 .logo img, .account img {
@@ -78,16 +81,22 @@ header.scrolled .logo img {
   width: 50px;
 }
 
+.account {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .account svg {
   width: 30px;
-  height: auto;
+  height: 30px;
   color: #E5DED4;
-  margin-top:50%;
   transition: width 0.3s ease, height 0.3s ease;
 }
 
 header.scrolled .account svg {
   width: 24px;
+  height: 24px;
 }
 
 nav {

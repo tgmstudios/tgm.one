@@ -30,6 +30,7 @@ const pageTitle = computed(() => {
   if (path === '/about') return `About — ${siteName}`
   if (path === '/projects') return `Projects — ${siteName}`
   if (path === '/blogs') return `Blog — ${siteName}`
+  if (path === '/search') return `Search — ${siteName}`
   if (path.startsWith('/project/')) {
     // Project pages handle their own meta tags, but provide fallback
     return `Project — ${siteName}`
@@ -51,6 +52,9 @@ const pageDescription = computed(() => {
   }
   if (path === '/blogs') {
     return 'Read blog posts about software development, technology, and technical insights from Aiden Johnson at TGM.One.'
+  }
+  if (path === '/search') {
+    return 'Search projects and blog posts by skills, technologies, and keywords at TGM.One.'
   }
   if (path.startsWith('/project/')) {
     // Project pages handle their own meta tags, but provide fallback

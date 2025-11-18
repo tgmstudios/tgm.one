@@ -1,5 +1,11 @@
 <template>
-  <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10" v-if="post">
+  <div>
+    <NavigationSidebar
+      :items="tocItems"
+      :active-id="activeHeading"
+      @navigate="scrollToHeading"
+    />
+    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10" v-if="post">
     <nav class="mb-6" aria-label="Breadcrumb">
       <NuxtLink to="/blogs" class="text-sm text-gray-300 hover:underline">← Back to blog</NuxtLink>
     </nav>
@@ -26,13 +32,14 @@
 
       <!-- Linked Skills -->
       <nav v-if="post.linkedSkills && post.linkedSkills.length" aria-label="Post skills" class="flex flex-wrap gap-2 mt-4">
-        <span 
+        <NuxtLink
           v-for="skill in post.linkedSkills" 
-          :key="skill.id || skill" 
-          class="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+          :key="skill.id || skill"
+          :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
+          class="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 transition-colors cursor-pointer"
         >
           {{ typeof skill === 'object' ? skill.name : skill }}
-        </span>
+        </NuxtLink>
       </nav>
     </header>
 
@@ -62,12 +69,15 @@
       </div>
     </aside>
   </article>
+  </div>
 </template>
 
 <script setup>
 import ContentRenderer from '~/components/ContentRenderer.vue'
-import { computed, watchEffect } from 'vue'
+import NavigationSidebar from '~/components/NavigationSidebar.vue'
+import { computed, watchEffect, onMounted, nextTick } from 'vue'
 import { useHead } from '#imports'
+import { useTableOfContents } from '~/composables/useTableOfContents.js'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -258,6 +268,34 @@ watchEffect(() => {
 const formatDate = (d) => {
   try { return new Date(d).toLocaleDateString() } catch { return '' }
 }
+
+// Table of contents
+const { headings, activeHeading, extractHeadings, extractHeadingsFromDOM, scrollToHeading: scrollTo } = useTableOfContents()
+
+const tocItems = computed(() => headings.value)
+
+const scrollToHeading = (id) => {
+  scrollTo(id)
+}
+
+// Extract headings from content
+onMounted(async () => {
+  await nextTick()
+  
+  // Try extracting from DOM first (after content is rendered)
+  setTimeout(() => {
+    const domHeadings = extractHeadingsFromDOM()
+    if (domHeadings.length > 0) {
+      headings.value = domHeadings
+    } else {
+      // Fallback to extracting from markdown content
+      const content = post.value?.content || post.value?.body || post.value?.markdown || ''
+      if (content) {
+        headings.value = extractHeadings(content)
+      }
+    }
+  }, 500)
+})
 </script>
 
 

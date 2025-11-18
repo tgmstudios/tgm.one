@@ -1,5 +1,11 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div>
+    <NavigationSidebar
+      :items="tocItems"
+      :active-id="activeHeading"
+      @navigate="scrollToHeading"
+    />
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div v-if="pending" class="text-gray-400">Loading project…</div>
     <div v-else-if="error || !projectobj" class="text-red-400">Project not found.</div>
     
@@ -66,13 +72,14 @@
 
         <!-- Linked Skills -->
         <nav v-if="projectobj.linkedSkills && projectobj.linkedSkills.length" aria-label="Project skills" class="flex flex-wrap gap-2 mb-4">
-          <span 
+          <NuxtLink
             v-for="skill in projectobj.linkedSkills" 
-            :key="skill.id || skill" 
-            class="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+            :key="skill.id || skill"
+            :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
+            class="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 transition-colors cursor-pointer"
           >
             {{ typeof skill === 'object' ? skill.name : skill }}
-          </span>
+          </NuxtLink>
         </nav>
 
         <!-- Project Links (GitHub, Devpost, Other) -->
@@ -112,11 +119,15 @@
         </div>
       </aside>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import ProjectWidget from '~/components/ProjectWidget.vue'
+import NavigationSidebar from '~/components/NavigationSidebar.vue'
+import { useTableOfContents } from '~/composables/useTableOfContents.js'
+import { onMounted, nextTick } from 'vue'
 import ContentRenderer from '~/components/ContentRenderer.vue'
 import { computed, watchEffect } from 'vue'
 import { useHead } from '#imports'
@@ -378,5 +389,33 @@ watchEffect(() => {
       ]
     })
   }
+})
+
+// Table of contents
+const { headings, activeHeading, extractHeadings, extractHeadingsFromDOM, scrollToHeading: scrollTo } = useTableOfContents()
+
+const tocItems = computed(() => headings.value)
+
+const scrollToHeading = (id) => {
+  scrollTo(id)
+}
+
+// Extract headings from content
+onMounted(async () => {
+  await nextTick()
+  
+  // Try extracting from DOM first (after content is rendered)
+  setTimeout(() => {
+    const domHeadings = extractHeadingsFromDOM()
+    if (domHeadings.length > 0) {
+      headings.value = domHeadings
+    } else {
+      // Fallback to extracting from markdown content
+      const content = projectobj.value?.content || projectobj.value?.body || projectobj.value?.markdown || ''
+      if (content) {
+        headings.value = extractHeadings(content)
+      }
+    }
+  }, 500)
 })
 </script>

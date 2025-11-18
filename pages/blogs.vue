@@ -23,13 +23,15 @@
         
         <!-- Skills -->
         <div v-if="post.linkedSkills && post.linkedSkills.length" class="flex flex-wrap gap-1 mb-2">
-          <span 
+          <NuxtLink
             v-for="skill in post.linkedSkills.slice(0, 2)" 
-            :key="skill.id || skill" 
-            class="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
+            :key="skill.id || skill"
+            :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
+            @click.stop
+            class="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 transition-colors cursor-pointer"
           >
             {{ typeof skill === 'object' ? skill.name : skill }}
-          </span>
+          </NuxtLink>
         </div>
         
         <p class="text-xs text-gray-400 mt-auto">{{ formatDate(post.createdAt || post.date) }}</p>
