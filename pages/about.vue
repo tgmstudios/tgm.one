@@ -496,26 +496,42 @@ const certifications = computed(() => {
 // Collect all skills from experiences, projects, and blogs, grouped by category
 const skillsByCategory = computed(() => {
   const skillMap = new Map()
-  const seenSkills = new Set() // Track seen skills by name to avoid duplicates
+  const seenSkills = new Map() // Track seen skills by normalized name -> { category, skill }
+  
+  // Helper to normalize skill name for comparison
+  const normalizeSkillName = (skill) => {
+    const skillName = typeof skill === 'object' ? (skill.name || skill.id || skill) : skill
+    if (!skillName) return null
+    return skillName.toString().toLowerCase().trim()
+  }
+  
+  // Helper to get the original skill object with name
+  const getSkillObject = (skill) => {
+    if (typeof skill === 'object' && (skill.name || skill.id)) {
+      return skill
+    }
+    return { name: typeof skill === 'object' ? skill : skill }
+  }
   
   // Helper to add skill to category
   const addSkill = (skill, category = 'Other') => {
-    const skillName = typeof skill === 'object' ? (skill.name || skill) : skill
-    if (!skillName) return
+    const normalizedName = normalizeSkillName(skill)
+    if (!normalizedName) return
     
-    // Create a unique key for the skill (category + name)
-    const skillKey = `${category}:${skillName.toLowerCase().trim()}`
+    // Check if we've already seen this skill (across all categories)
+    if (seenSkills.has(normalizedName)) {
+      // Skill already exists, don't add it again
+      return
+    }
     
-    // Skip if we've already seen this skill
-    if (seenSkills.has(skillKey)) return
-    
-    // Mark as seen
-    seenSkills.add(skillKey)
+    // Mark as seen and store the category and skill object
+    const skillObj = getSkillObject(skill)
+    seenSkills.set(normalizedName, { category, skill: skillObj })
     
     if (!skillMap.has(category)) {
       skillMap.set(category, [])
     }
-    skillMap.get(category).push(skill)
+    skillMap.get(category).push(skillObj)
   }
   
   // Collect from experiences
@@ -562,13 +578,25 @@ const skillsByCategory = computed(() => {
     })
   }
   
-  // Sort skills within each category
+  // Sort skills within each category and ensure no duplicates within category
   const result = {}
   skillMap.forEach((skills, category) => {
-    result[category] = skills.sort((a, b) => {
-      const nameA = typeof a === 'object' ? a.name : a
-      const nameB = typeof b === 'object' ? b.name : b
-      return nameA.localeCompare(nameB)
+    // Additional deduplication within category (in case same skill was added multiple times)
+    const categorySeen = new Set()
+    const uniqueSkills = skills.filter(skill => {
+      const skillName = typeof skill === 'object' ? (skill.name || skill.id || '') : skill
+      const normalized = skillName.toString().toLowerCase().trim()
+      if (categorySeen.has(normalized)) {
+        return false
+      }
+      categorySeen.add(normalized)
+      return true
+    })
+    
+    result[category] = uniqueSkills.sort((a, b) => {
+      const nameA = typeof a === 'object' ? (a.name || a.id || '') : a
+      const nameB = typeof b === 'object' ? (b.name || b.id || '') : b
+      return nameA.toString().localeCompare(nameB.toString())
     })
   })
   
