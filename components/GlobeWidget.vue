@@ -185,7 +185,7 @@ onMounted(async () => {
             textSprite.scale.set(canvas.width / 40, canvas.height / 40, 1);  // Scale based on canvas size
 
             // Position text below the icon
-            textSprite.position.y = -2.5;
+            textSprite.position.y = -3;
 
             // Add sprites to group
             group.add(textSprite);
