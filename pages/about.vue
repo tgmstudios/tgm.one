@@ -469,28 +469,47 @@ const { data: blogsData } = await useAsyncData(
   }
 )
 
-const experiences = computed(() => experiencesData.value || [])
+const experiences = computed(() => {
+  // _originalIndex is already set by getExperiences from the original source array
+  // Just return the experiences as-is to preserve the original order
+  return experiencesData.value || []
+})
 
-// Group experiences by category
+// Group experiences by category, preserving original array order (0, 1, 2, etc.) within each category
 const jobs = computed(() => {
-  return experiences.value.filter(exp => {
-    const category = (exp.experienceCategory || '').toString().toLowerCase()
-    return category === 'job' || category === 'work' || category === 'employment'
-  })
+  return experiences.value
+    .filter(exp => {
+      const category = (exp.experienceCategory || '').toString().toLowerCase()
+      return category === 'job' || category === 'work' || category === 'employment'
+    })
+    .sort((a, b) => {
+      // Use original array index to preserve order from source data (0, 1, 2, etc.)
+      return (a._originalIndex ?? Infinity) - (b._originalIndex ?? Infinity)
+    })
 })
 
 const education = computed(() => {
-  return experiences.value.filter(exp => {
-    const category = (exp.experienceCategory || '').toString().toLowerCase()
-    return category === 'education' || category === 'school' || category === 'university'
-  })
+  return experiences.value
+    .filter(exp => {
+      const category = (exp.experienceCategory || '').toString().toLowerCase()
+      return category === 'education' || category === 'school' || category === 'university'
+    })
+    .sort((a, b) => {
+      // Use original array index to preserve order from source data (0, 1, 2, etc.)
+      return (a._originalIndex ?? Infinity) - (b._originalIndex ?? Infinity)
+    })
 })
 
 const certifications = computed(() => {
-  return experiences.value.filter(exp => {
-    const category = (exp.experienceCategory || '').toString().toLowerCase()
-    return category === 'certification' || category === 'cert' || category === 'certificate'
-  })
+  return experiences.value
+    .filter(exp => {
+      const category = (exp.experienceCategory || '').toString().toLowerCase()
+      return category === 'certification' || category === 'cert' || category === 'certificate'
+    })
+    .sort((a, b) => {
+      // Use original array index to preserve order from source data (0, 1, 2, etc.)
+      return (a._originalIndex ?? Infinity) - (b._originalIndex ?? Infinity)
+    })
 })
 
 // Collect all skills from experiences, projects, and blogs, grouped by category
