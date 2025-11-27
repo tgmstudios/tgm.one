@@ -19,7 +19,7 @@
             Aiden Johnson
           </h1>
           <p class="text-lg lg:text-xl text-gray-300 leading-relaxed mb-6 max-w-2xl">
-            Software developer focused on building practical, reliable systems — from RFID and IoT to web platforms and infrastructure.
+            Software developer focused on building practical, reliable systems — from AI and IoT to web platforms and infrastructure.
           </p>
           <div class="flex items-center gap-3">
             <a 
@@ -89,7 +89,7 @@
             <h2 class="text-xl font-semibold text-white">Interests</h2>
           </div>
           <p class="text-gray-300 leading-relaxed">
-            Systems design, containers and orchestration, secure OTA, RFID, and applied ML. I like shipping clean, maintainable solutions.
+            Systems design, containers and orchestration, secure OTA, and applied ML. I like shipping clean, maintainable solutions.
           </p>
         </div>
       </div>
@@ -961,67 +961,13 @@ const categorizeSkill = (skill) => {
 
 // Generate a consistent color for any category name
 const getCategoryColor = (category) => {
-  // Map of known categories to colors
-  const colorMap = {
-    'Programming': 'text-blue-300',
-    'Cloud & DevOps': 'text-purple-300',
-    'Data & APIs': 'text-green-300',
-    'Hardware & ML': 'text-orange-300',
-    'Frontend': 'text-pink-300',
-    'Security': 'text-red-300',
-    'Domain': 'text-cyan-300',
-    'Other': 'text-gray-300'
-  }
-  
-  // Return mapped color or generate one based on category name
-  if (colorMap[category]) {
-    return colorMap[category]
-  }
-  
-  // Generate a consistent color for unknown categories using a hash
-  const hash = category.split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc)
-  }, 0)
-  
-  const colors = [
-    'text-blue-300', 'text-purple-300', 'text-green-300', 
-    'text-orange-300', 'text-pink-300', 'text-red-300',
-    'text-cyan-300', 'text-yellow-300', 'text-indigo-300'
-  ]
-  
-  return colors[Math.abs(hash) % colors.length]
+  // Return neutral color for all categories
+  return 'text-white'
 }
 
 const getCategoryDotColor = (category) => {
-  // Map of known categories to dot colors
-  const colorMap = {
-    'Programming': 'bg-blue-400',
-    'Cloud & DevOps': 'bg-purple-400',
-    'Data & APIs': 'bg-green-400',
-    'Hardware & ML': 'bg-orange-400',
-    'Frontend': 'bg-pink-400',
-    'Security': 'bg-red-400',
-    'Domain': 'bg-cyan-400',
-    'Other': 'bg-gray-400'
-  }
-  
-  // Return mapped color or generate one based on category name
-  if (colorMap[category]) {
-    return colorMap[category]
-  }
-  
-  // Generate a consistent color for unknown categories using a hash
-  const hash = category.split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc)
-  }, 0)
-  
-  const colors = [
-    'bg-blue-400', 'bg-purple-400', 'bg-green-400', 
-    'bg-orange-400', 'bg-pink-400', 'bg-red-400',
-    'bg-cyan-400', 'bg-yellow-400', 'bg-indigo-400'
-  ]
-  
-  return colors[Math.abs(hash) % colors.length]
+  // Return neutral color for all categories
+  return 'bg-white/30'
 }
 
 const { render: renderMarkdown } = useMarkdownRenderer()
