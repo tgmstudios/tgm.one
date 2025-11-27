@@ -1,5 +1,5 @@
 <template>
-  <footer class="mt-16 border-t border-white/10">
+  <footer :class="['border-t border-white/10', { 'mt-16': !isHomePage }]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div class="flex items-center gap-4">
@@ -62,6 +62,11 @@ export default {
     return {
       logoURL,
       year: new Date().getFullYear()
+    }
+  },
+  computed: {
+    isHomePage() {
+      return this.$route.path === '/' || this.$route.path === ''
     }
   }
 }
