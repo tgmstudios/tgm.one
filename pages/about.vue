@@ -224,7 +224,7 @@
             >
               <div 
                 v-if="experience.content || experience.body || experience.markdown"
-                class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded"
+                class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded markdown-content"
                 v-html="renderedExperienceContent(experience)"
               ></div>
               <p v-else-if="experience.description" class="text-gray-300 leading-relaxed">
@@ -368,7 +368,7 @@
             >
               <div 
                 v-if="experience.content || experience.body || experience.markdown"
-                class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded"
+                class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded markdown-content"
                 v-html="renderedExperienceContent(experience)"
               ></div>
               <p v-else-if="experience.description" class="text-gray-300 leading-relaxed">
@@ -510,7 +510,7 @@
             >
               <div 
                 v-if="experience.content || experience.body || experience.markdown"
-                class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded"
+                class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded markdown-content"
                 v-html="renderedExperienceContent(experience)"
               ></div>
               <p v-else-if="experience.description" class="text-gray-300 leading-relaxed">
@@ -610,7 +610,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useMarkdownRenderer } from '~/composables/useMarkdownRenderer.js'
 import NavigationSidebar from '~/components/NavigationSidebar.vue'
 
@@ -1179,13 +1179,108 @@ const updateActiveSection = () => {
 
 let scrollListener = null
 
+// Function to add copy buttons to code blocks in markdown content
+const addCopyButtonsToCodeBlocks = () => {
+  if (typeof document === 'undefined') return
+  
+  const markdownContainers = document.querySelectorAll('.markdown-content')
+  markdownContainers.forEach(container => {
+    const codeBlocks = container.querySelectorAll('pre code')
+    codeBlocks.forEach((codeElement) => {
+      const preElement = codeElement.parentElement
+      if (!preElement) return
+      
+      // Skip if copy button already exists
+      if (preElement.querySelector('.copy-code-button')) return
+      
+      // Create copy button
+      const copyButton = document.createElement('button')
+      copyButton.className = 'copy-code-button'
+      copyButton.setAttribute('aria-label', 'Copy code')
+      copyButton.innerHTML = `
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <span class="copy-text">Copy</span>
+      `
+      
+      // Get the code text
+      const getCodeText = () => {
+        let text = codeElement.textContent || codeElement.innerText
+        if (!text) {
+          const tempDiv = document.createElement('div')
+          tempDiv.innerHTML = codeElement.innerHTML
+          text = tempDiv.textContent || tempDiv.innerText
+        }
+        return text || ''
+      }
+      
+      // Copy functionality
+      copyButton.addEventListener('click', async () => {
+        const codeText = getCodeText()
+        try {
+          await navigator.clipboard.writeText(codeText)
+          copyButton.classList.add('copied')
+          const span = copyButton.querySelector('.copy-text')
+          if (span) span.textContent = 'Copied!'
+          setTimeout(() => {
+            copyButton.classList.remove('copied')
+            if (span) span.textContent = 'Copy'
+          }, 2000)
+        } catch (err) {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea')
+          textArea.value = codeText
+          textArea.style.position = 'fixed'
+          textArea.style.opacity = '0'
+          document.body.appendChild(textArea)
+          textArea.select()
+          try {
+            document.execCommand('copy')
+            copyButton.classList.add('copied')
+            const span = copyButton.querySelector('.copy-text')
+            if (span) span.textContent = 'Copied!'
+            setTimeout(() => {
+              copyButton.classList.remove('copied')
+              if (span) span.textContent = 'Copy'
+            }, 2000)
+          } catch (e) {
+            console.error('Failed to copy:', e)
+          }
+          document.body.removeChild(textArea)
+        }
+      })
+      
+      // Make pre element relative for absolute positioning
+      preElement.style.position = 'relative'
+      preElement.appendChild(copyButton)
+    })
+  })
+}
+
 onMounted(() => {
   scrollListener = () => updateActiveSection()
   window.addEventListener('scroll', scrollListener, { passive: true })
   setTimeout(() => {
     updateActiveSection()
   }, 100)
+  
+  // Add copy buttons after content is rendered
+  nextTick(() => {
+    setTimeout(() => {
+      addCopyButtonsToCodeBlocks()
+    }, 200)
+  })
 })
+
+// Watch for expanded sections changes to add copy buttons
+watch(expandedSections, () => {
+  nextTick(() => {
+    setTimeout(() => {
+      addCopyButtonsToCodeBlocks()
+    }, 200)
+  })
+}, { deep: true })
 
 onUnmounted(() => {
   if (scrollListener) {
@@ -1284,5 +1379,85 @@ onUnmounted(() => {
 /* Smooth transitions for interactive elements */
 .group {
   transition: all 0.3s ease;
+}
+
+/* Code block styling with line breaking */
+.experience-content :deep(pre) {
+  position: relative;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 0.5rem;
+}
+
+.experience-content :deep(pre code) {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Copy button styling */
+.experience-content :deep(.copy-code-button) {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(31, 41, 55, 0.9);
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  border-radius: 0.375rem;
+  color: rgb(209, 213, 219);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+.experience-content :deep(.copy-code-button:hover) {
+  background: rgba(55, 65, 81, 0.95);
+  border-color: rgba(96, 165, 250, 0.5);
+  color: rgb(147, 197, 253);
+}
+
+.experience-content :deep(.copy-code-button.copied) {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: rgb(74, 222, 128);
+}
+
+.experience-content :deep(.copy-code-button svg) {
+  flex-shrink: 0;
+}
+
+.experience-content :deep(.copy-code-button .copy-text) {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .experience-content :deep(.copy-code-button) {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.625rem;
+  }
+  
+  .experience-content :deep(.copy-code-button .copy-text) {
+    display: none;
+  }
 }
 </style>
