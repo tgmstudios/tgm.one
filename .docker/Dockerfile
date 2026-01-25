@@ -27,11 +27,16 @@ COPY --from=builder /app/.output /app/.output
 COPY .docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+# Run as non-root node user for security
+RUN chown -R node:node /app
+
 # At runtime: NUXT_PUBLIC_API_BASE (preferred) or NUXT_API_URL (legacy) = backend API URL
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
 EXPOSE 3000
+
+USER node
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["node", ".output/server/index.mjs"]
