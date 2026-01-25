@@ -12,31 +12,26 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run generate
+# Build for SSR (produces .output with Node server; do not use 'nuxt generate')
+RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Production stage – Node.js for SSR
+FROM node:23-alpine
 
-# Copy nginx configuration
-COPY .docker/nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy the env.js template
-COPY .docker/env.js.template /usr/share/nginx/html/env.js.template
+# Copy built output (server + public assets)
+COPY --from=builder /app/.output /app/.output
 
-# Copy entrypoint script and ensure proper line endings
+# Entrypoint maps NUXT_API_URL → NUXT_PUBLIC_API_BASE when only the legacy var is set
 COPY .docker/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh && \
-    sed -i 's/\r$//' /docker-entrypoint.sh && \
-    cat /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
-# Copy built files from the builder stage
-# The output is in the .output directory for Nuxt 3
-COPY --from=builder /app/.output/public /usr/share/nginx/html
+# At runtime: NUXT_PUBLIC_API_BASE (preferred) or NUXT_API_URL (legacy) = backend API URL
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
-# Expose web port
-EXPOSE 80
+EXPOSE 3000
 
-# Use custom entrypoint script
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", ".output/server/index.mjs"]

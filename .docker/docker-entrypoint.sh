@@ -1,10 +1,8 @@
 #!/bin/sh
 set -e
-
-# Generate runtime environment configuration
-echo "Generating environment configuration..."
-envsubst < /usr/share/nginx/html/env.js.template > /usr/share/nginx/html/env.js
-
-# Start nginx
-echo "Starting nginx..."
-exec "$@" 
+# Support legacy NUXT_API_URL: if set and NUXT_PUBLIC_API_BASE is not, copy over.
+# Nuxt only overrides runtimeConfig.public.apiBase from NUXT_PUBLIC_API_BASE.
+if [ -n "$NUXT_API_URL" ] && [ -z "$NUXT_PUBLIC_API_BASE" ]; then
+  export NUXT_PUBLIC_API_BASE="$NUXT_API_URL"
+fi
+exec "$@"

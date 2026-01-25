@@ -9,9 +9,9 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      foligoBaseUrl: 'https://api.foligo.tech',
-      foligoProjectId: 'e9f40961-f0db-42f1-8269-8084906a2828',
-      foligoSubdomain: process.env.FOLIGO_SUBDOMAIN || 'aiden' // Add your subdomain here
+      foligoBaseUrl: process.env.FOLIGO_BASE_URL || 'https://api.foligo.tech',
+      foligoProjectId: process.env.FOLIGO_PROJECT_ID || 'e9f40961-f0db-42f1-8269-8084906a2828',
+      foligoSubdomain: process.env.FOLIGO_SUBDOMAIN || 'aiden'
     }
   },
   app: {
