@@ -25,7 +25,7 @@ COPY --from=builder /app/.output /app/.output
 
 # Entrypoint maps NUXT_API_URL → NUXT_PUBLIC_API_BASE when only the legacy var is set
 COPY .docker/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 # Run as non-root node user for security
 RUN chown -R node:node /app
