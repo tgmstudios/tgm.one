@@ -1,18 +1,21 @@
 {
-  "name": "TGM.one Dev Environment",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "frontend",
-  "workspaceFolder": "/workspace",
-  "shutdownAction": "stopCompose",
-  "remoteUser": "root",
-  "overrideCommand": true,
-  "forwardPorts": [2010],
-  "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/root/.gitconfig,type=bind"
-  ],
-  "settings": {
-    "terminal.integrated.defaultProfile.linux": "bash"
+  "name": "TGM.one",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "features": {
+    "ghcr.io/devcontainers-extra/features/pnpm:2": {}
   },
-  "postCreateCommand": "ls /workspace && npm install --prefix /workspace"
+  "forwardPorts": [8080],
+  "postCreateCommand": "pnpm install",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "vue.volar",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  }
 }

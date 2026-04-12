@@ -1,22 +1,24 @@
 # Build stage
-FROM node:23-alpine AS builder
+FROM node:22-alpine AS builder
+
+RUN corepack enable && corepack prepare pnpm@10.8.1 --activate
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy lockfile and package.json first for better layer caching
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Build for SSR (produces .output with Node server; do not use 'nuxt generate')
-RUN npm run build
+# Build for SSR (produces .output with Node server)
+RUN pnpm run build
 
 # Production stage – Node.js for SSR
-FROM node:23-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -30,7 +32,6 @@ RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 # Run as non-root node user for security
 RUN chown -R node:node /app
 
-# At runtime: NUXT_PUBLIC_API_BASE (preferred) or NUXT_API_URL (legacy) = backend API URL
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
