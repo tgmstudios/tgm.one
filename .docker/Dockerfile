@@ -14,6 +14,10 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Analytics key (write-only, safe to inline in client bundle)
+ARG FOLIGO_ANALYTICS_KEY
+ENV FOLIGO_ANALYTICS_KEY=${FOLIGO_ANALYTICS_KEY}
+
 # Build for SSR (produces .output with Node server)
 RUN pnpm run build
 

@@ -11,7 +11,8 @@ export default defineNuxtConfig({
     public: {
       foligoBaseUrl: process.env.FOLIGO_BASE_URL || 'https://api.foligo.tech',
       foligoProjectId: process.env.FOLIGO_PROJECT_ID || 'e9f40961-f0db-42f1-8269-8084906a2828',
-      foligoSubdomain: process.env.FOLIGO_SUBDOMAIN || 'aiden'
+      foligoSubdomain: process.env.FOLIGO_SUBDOMAIN || 'aiden',
+      foligoAnalyticsKey: process.env.FOLIGO_ANALYTICS_KEY || ''
     }
   },
   app: {

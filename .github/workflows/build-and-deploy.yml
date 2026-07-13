@@ -49,6 +49,8 @@ jobs:
         platforms: linux/amd64,linux/arm64
         file: .docker/Dockerfile
         push: true
+        build-args: |
+          FOLIGO_ANALYTICS_KEY=${{ secrets.FOLIGO_ANALYTICS_KEY }}
         tags: |
           registry.tgm.one/tgm.one/${{ env.TAG_LATEST_WEBSITE }}
           registry.tgm.one/tgm.one/${{ env.TAG_COMMIT_WEBSITE }}
