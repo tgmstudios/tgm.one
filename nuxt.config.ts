@@ -49,9 +49,9 @@ export default defineNuxtConfig({
       '/sitemap.xml': { prerender: true },
       // Cache API routes
       '/api/**': { cors: true, headers: { 'cache-control': 's-maxage=300' } },
-      // Static pages
-      '/': { prerender: true },
-      '/about': { prerender: true },
+      // Static pages — use ISR to pick up runtime env vars
+      '/': { isr: 3600 },
+      '/about': { isr: 3600 },
       // Dynamic pages with ISR
       '/projects': { isr: 3600 },
       '/blogs': { isr: 3600 },
