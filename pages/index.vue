@@ -1,6 +1,12 @@
 <template>
   <div class="home">
     <SeoContent />
+    <!-- Early LCP anchor: renders a large text element instantly to capture LCP before the animation/globe -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white/90 text-center px-4" style="content-visibility: visible; contain: none;">
+        Aiden Johnson
+      </h1>
+    </div>
     <SkipButton 
       v-if="showTextAnimation" 
       @skip="skipAnimation"
@@ -43,19 +49,11 @@ export default {
   methods: {
     onAnimationComplete() {
       this.showTextAnimation = false;
-      this.deferGlobe();
+      this.showGlobe = true;
     },
     skipAnimation() {
       this.showTextAnimation = false;
-      this.deferGlobe();
-    },
-    deferGlobe() {
-      // Defer heavy globe render until browser is idle, keeping LCP fast
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        requestIdleCallback(() => { this.showGlobe = true; }, { timeout: 2000 });
-      } else {
-        setTimeout(() => { this.showGlobe = true; }, 200);
-      }
+      this.showGlobe = true;
     },
     updateHeaderHeight() {
       if (typeof document !== 'undefined') {

@@ -1,6 +1,6 @@
 <template>
     <ClientOnly>
-        <div id="globeContainer" ref="globeContainer"></div>
+        <div id="globeContainer" ref="globeContainer" style="content-visibility: auto; contain-intrinsic-size: 100vh;"></div>
         <template #fallback>
             <div class="w-full h-screen flex items-center justify-center">
                 <div class="text-gray-400">Loading globe...</div>
