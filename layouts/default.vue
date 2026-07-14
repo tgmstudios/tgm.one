@@ -18,15 +18,20 @@ const { headerMenu } = useHeaderMenu()
 import { useRoute } from '#app'
 import { computed, watchEffect } from 'vue'
 import { useHead } from '#imports'
+import { useJsonLd } from '~/composables/useJsonLd'
 
 const route = useRoute()
 const siteName = 'TGM.One'
+const { webSiteSchema, injectJsonLd } = useJsonLd()
+
+// Inject WebSite schema on all pages
+injectJsonLd(webSiteSchema())
 
 // Removed project cache - pages handle their own meta tags
 
 const pageTitle = computed(() => {
   const path = route.path || '/'
-  if (path === '/' || path === '') return `Home — ${siteName}`
+  if (path === '/' || path === '') return `Aiden Johnson — Software Developer — ${siteName}`
   if (path === '/about') return `About — ${siteName}`
   if (path === '/projects') return `Projects — ${siteName}`
   if (path === '/blogs') return `Blog — ${siteName}`
@@ -42,7 +47,7 @@ const pageTitle = computed(() => {
 const pageDescription = computed(() => {
   const path = route.path || '/'
   if (path === '/' || path === '') {
-    return 'One developer building complete systems from design to deployment. Specializing in IoT, web platforms, and infrastructure — shipping secure, scalable solutions.'
+    return 'Aiden Johnson — software developer building complete systems from design to deployment. Specializing in IoT, web platforms, and infrastructure.'
   }
   if (path === '/about') {
     return 'Learn about Aiden Johnson, a software developer studying Computer Science at Penn State, building products at Telaeris, and leading technical initiatives for PSU Competitive Cybersecurity Organization.'
@@ -71,11 +76,8 @@ const canonicalUrl = computed(() => {
 
 const pageImage = computed(() => {
   const path = route.path || '/'
-  if (path.startsWith('/project/')) {
-    // Project pages handle their own meta tags, but provide fallback
-    return `${siteUrl}/favicon.ico`
-  }
-  return `${siteUrl}/favicon.ico`
+  // Default OG image: use profile photo (much better than 16x16 favicon)
+  return 'https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file'
 })
 
 watchEffect(() => {

@@ -78,6 +78,7 @@ import NavigationSidebar from '~/components/NavigationSidebar.vue'
 import { computed, watchEffect, onMounted, nextTick } from 'vue'
 import { useHead } from '#imports'
 import { useTableOfContents } from '~/composables/useTableOfContents.js'
+import { useJsonLd } from '~/composables/useJsonLd'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -107,6 +108,8 @@ const post = computed(() => {
 if (!post.value) {
   throw createError({ statusCode: 404, statusMessage: 'Blog post not found' })
 }
+
+const { articleSchema, injectJsonLd } = useJsonLd()
 
 // Fetch all blogs for related posts (lazy, client-side only)
 const { data: allBlogsData } = await useAsyncData(
@@ -222,6 +225,18 @@ watchEffect(() => {
   const siteUrl = 'https://tgm.one'
   const canonicalUrl = `${siteUrl}${route.path}`
   const pageTitle = title ? `${title} — TGM.One` : 'Blog — TGM.One'
+  
+  // Inject Article schema
+  if (post.value && title) {
+    injectJsonLd(articleSchema({
+      title: pageTitle,
+      description: description,
+      datePublished: post.value.createdAt || post.value.date || new Date().toISOString(),
+      dateModified: post.value.updatedAt || post.value.createdAt || post.value.date || new Date().toISOString(),
+      author: 'Aiden Johnson',
+      url: canonicalUrl
+    }))
+  }
   
   useHead({
     title: pageTitle,

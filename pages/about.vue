@@ -613,8 +613,14 @@
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useMarkdownRenderer } from '~/composables/useMarkdownRenderer.js'
 import NavigationSidebar from '~/components/NavigationSidebar.vue'
+import { useJsonLd } from '~/composables/useJsonLd'
 
 const config = useRuntimeConfig()
+const { personSchema, injectJsonLd } = useJsonLd()
+
+// Inject Person schema
+injectJsonLd(personSchema())
+
 const { createFoligoClient } = await import('~/lib/foligoClient.js')
 const foligo = createFoligoClient({
   foligoBaseUrl: config.public.foligoBaseUrl,

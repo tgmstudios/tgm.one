@@ -131,6 +131,7 @@ import { onMounted, nextTick } from 'vue'
 import ContentRenderer from '~/components/ContentRenderer.vue'
 import { computed, watchEffect } from 'vue'
 import { useHead } from '#imports'
+import { useJsonLd } from '~/composables/useJsonLd'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -327,6 +328,8 @@ const relatedProjects = computed(() => {
 })
 
 // Update meta tags
+const { projectSchema, injectJsonLd } = useJsonLd()
+
 watchEffect(() => {
   if (projectobj.value) {
     const siteUrl = 'https://tgm.one'
@@ -336,6 +339,15 @@ watchEffect(() => {
     const image = projectobj.value.featuredImage || projectobj.value.image ? 
       `${siteUrl}${projectobj.value.featuredImage || projectobj.value.image}` : 
       `${siteUrl}/favicon.ico`
+    
+    // Inject Project schema
+    injectJsonLd(projectSchema({
+      title: projectobj.value.title,
+      description: description,
+      url: canonicalUrl,
+      dateCreated: projectobj.value.date || projectobj.value.createdAt || new Date().toISOString(),
+      image: image
+    }))
     
     useHead({
       title: pageTitle,

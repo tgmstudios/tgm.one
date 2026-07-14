@@ -18,7 +18,7 @@ export default defineNuxtConfig({
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
     head: {
-      title: 'TGM.One',
+      title: 'Aiden Johnson — Software Developer — TGM.One',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'One developer building complete systems from design to deployment. Specializing in IoT, web platforms, and infrastructure - shipping secure, scalable solutions.' },
@@ -27,7 +27,12 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'TGM.One' },
         { property: 'og:locale', content: 'en_US' },
+        { property: 'og:image', content: 'https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file' },
+        { property: 'og:image:alt', content: 'Aiden Johnson — TGM.One' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
         { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:image', content: 'https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file' },
         { name: 'theme-color', content: '#0a0a0a' }
       ],
       link: [
