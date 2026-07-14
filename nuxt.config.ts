@@ -37,6 +37,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'canonical', href: 'https://tgm.one' },
+        { rel: 'preconnect', href: 'https://api.foligo.tech' },
+        { rel: 'preconnect', href: 'https://unpkg.com', crossorigin: 'anonymous' },
         { rel: 'preload', href: 'https://unpkg.com/three-globe/example/img/earth-night.jpg', as: 'image', crossorigin: 'anonymous' }
       ],
       bodyAttrs: {
