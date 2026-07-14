@@ -11,7 +11,10 @@
       <div class="flex flex-col md:flex-row md:items-center gap-8 mb-8">
         <img 
           src="https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file" 
-          alt="Aiden Johnson" 
+          alt="Aiden Johnson"
+          width="160"
+          height="160"
+          fetchpriority="high"
           class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-2 border-white/20 shadow-xl ring-4 ring-white/5"
         />
         <div class="flex-1">

@@ -43,11 +43,19 @@ export default {
   methods: {
     onAnimationComplete() {
       this.showTextAnimation = false;
-      this.showGlobe = true;
+      this.deferGlobe();
     },
     skipAnimation() {
       this.showTextAnimation = false;
-      this.showGlobe = true;
+      this.deferGlobe();
+    },
+    deferGlobe() {
+      // Defer heavy globe render until browser is idle, keeping LCP fast
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        requestIdleCallback(() => { this.showGlobe = true; }, { timeout: 2000 });
+      } else {
+        setTimeout(() => { this.showGlobe = true; }, 200);
+      }
     },
     updateHeaderHeight() {
       if (typeof document !== 'undefined') {

@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgm-one-staging
+  namespace: tgm-one-staging
+  labels:
+    app: tgm-one-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tgm-one-staging
+  template:
+    metadata:
+      labels:
+        app: tgm-one-staging
+    spec:
+      imagePullSecrets:
+        - name: registry-tgm-one
+      containers:
+        - name: website
+          image: registry.tgm.one/tgm.one/tgm-one-stage:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: web
+              protocol: TCP
+          env:
+            - name: FOLIGO_BASE_URL
+              value: "https://api.foligo.tech"
+            - name: FOLIGO_PROJECT_ID
+              value: "e9f40961-f0db-42f1-8269-8084906a2828"
+            - name: FOLIGO_SUBDOMAIN
+              value: "aiden"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tgm-one-staging
+  namespace: tgm-one-staging
+  labels:
+    app: tgm-one-staging
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: tgm-one-staging
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tgm-one-staging
+  namespace: tgm-one-staging
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - staging.tgm.one
+      secretName: tgm-one-staging-tls
+  rules:
+    - host: staging.tgm.one
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tgm-one-staging
+                port:
+                  number: 80

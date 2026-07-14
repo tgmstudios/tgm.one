@@ -36,7 +36,8 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#0a0a0a' }
       ],
       link: [
-        { rel: 'canonical', href: 'https://tgm.one' }
+        { rel: 'canonical', href: 'https://tgm.one' },
+        { rel: 'preload', href: 'https://unpkg.com/three-globe/example/img/earth-night.jpg', as: 'image', crossorigin: 'anonymous' }
       ],
       bodyAttrs: {
         class: 'bg-gray-950 text-gray-100'

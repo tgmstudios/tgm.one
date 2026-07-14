@@ -6,6 +6,9 @@
           <img 
             src="https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file" 
             alt="Aiden Johnson" 
+            width="64"
+            height="64"
+            loading="lazy"
             class="h-16 w-16 rounded-full object-cover border-2 border-white/20 shrink-0"
           />
           <div>
