@@ -183,49 +183,39 @@
               :key="role.id || role.title"
               class="pl-5 border-l-2 border-blue-500/50 bg-white/5 rounded-r-lg p-4"
             >
-              <div class="flex items-start justify-between gap-4 mb-2">
+              <div class="flex items-center justify-between gap-4">
                 <h4 class="font-semibold text-gray-100 text-lg">{{ role.title || role.name }}</h4>
                 <span v-if="role.startDate || role.endDate" class="text-xs text-gray-400 whitespace-nowrap">
                   {{ role.startDate ? formatDate(role.startDate) : '' }}
                   {{ role.endDate ? ` – ${formatDate(role.endDate)}` : (role.isOngoing ? ' – Present' : '') }}
                 </span>
               </div>
-              <div v-if="role.skills && role.skills.length" class="flex flex-wrap gap-2 mt-3">
-                <NuxtLink
-                  v-for="skill in role.skills" 
-                  :key="skill.id || skill"
-                  :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
-                  class="px-2.5 py-1 text-xs rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium hover:bg-blue-500/30 transition-colors cursor-pointer"
-                >
-                  {{ typeof skill === 'object' ? skill.name : skill }}
-                </NuxtLink>
-              </div>
             </div>
           </div>
-          
+
           <!-- Content -->
-          <div v-if="experience.content || experience.body || experience.markdown || experience.description">
+          <div v-if="experience.content || experience.body || experience.markdown || experience.description || (experience.linkedSkills && experience.linkedSkills.length)">
             <button
               @click="toggleExpanded(experience.id || experience.slug)"
               class="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 mb-4 transition-colors font-medium"
             >
-              <svg 
+              <svg
                 class="w-4 h-4 transition-transform duration-200"
                 :class="{ 'rotate-90': expandedSections[experience.id || experience.slug] }"
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
               <span>{{ expandedSections[experience.id || experience.slug] ? 'Hide' : 'Show' }} Details</span>
             </button>
-            
-            <div 
+
+            <div
               v-show="expandedSections[experience.id || experience.slug]"
               class="experience-content"
             >
-              <div 
+              <div
                 v-if="experience.content || experience.body || experience.markdown"
                 class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded markdown-content"
                 v-html="renderedExperienceContent(experience)"
@@ -233,21 +223,21 @@
               <p v-else-if="experience.description" class="text-gray-300 leading-relaxed">
                 {{ experience.description }}
               </p>
-            </div>
-          </div>
-          
-          <!-- Linked Skills -->
-          <div v-if="experience.linkedSkills && experience.linkedSkills.length" class="mt-6 pt-6 border-t border-white/10">
-            <h5 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Skills & Technologies</h5>
-            <div class="flex flex-wrap gap-2">
-              <NuxtLink
-                v-for="skill in experience.linkedSkills" 
-                :key="skill.id || skill"
-                :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
-                class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer"
-              >
-                {{ typeof skill === 'object' ? skill.name : skill }}
-              </NuxtLink>
+
+              <!-- Linked Skills -->
+              <div v-if="experience.linkedSkills && experience.linkedSkills.length" class="mt-6 pt-6 border-t border-white/10">
+                <h5 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Skills & Technologies</h5>
+                <div class="flex flex-wrap gap-2">
+                  <NuxtLink
+                    v-for="skill in experience.linkedSkills"
+                    :key="skill.id || skill"
+                    :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
+                    class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer"
+                  >
+                    {{ typeof skill === 'object' ? skill.name : skill }}
+                  </NuxtLink>
+                </div>
+              </div>
             </div>
           </div>
                 </div>
@@ -327,49 +317,39 @@
               :key="role.id || role.title"
               class="pl-5 border-l-2 border-green-500/50 bg-white/5 rounded-r-lg p-4"
             >
-              <div class="flex items-start justify-between gap-4 mb-2">
+              <div class="flex items-center justify-between gap-4">
                 <h4 class="font-semibold text-gray-100 text-lg">{{ role.title || role.name }}</h4>
                 <span v-if="role.startDate || role.endDate" class="text-xs text-gray-400 whitespace-nowrap">
                   {{ role.startDate ? formatDate(role.startDate) : '' }}
                   {{ role.endDate ? ` – ${formatDate(role.endDate)}` : (role.isOngoing ? ' – Present' : '') }}
                 </span>
               </div>
-              <div v-if="role.skills && role.skills.length" class="flex flex-wrap gap-2 mt-3">
-                <NuxtLink
-                  v-for="skill in role.skills" 
-                  :key="skill.id || skill"
-                  :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
-                  class="px-2.5 py-1 text-xs rounded-md bg-green-500/20 text-green-300 border border-green-500/30 font-medium hover:bg-green-500/30 transition-colors cursor-pointer"
-                >
-                  {{ typeof skill === 'object' ? skill.name : skill }}
-                </NuxtLink>
-              </div>
             </div>
           </div>
-          
+
           <!-- Content -->
-          <div v-if="experience.content || experience.body || experience.markdown || experience.description">
+          <div v-if="experience.content || experience.body || experience.markdown || experience.description || (experience.linkedSkills && experience.linkedSkills.length)">
             <button
               @click="toggleExpanded(experience.id || experience.slug)"
               class="flex items-center gap-2 text-sm text-green-400 hover:text-green-300 mb-4 transition-colors font-medium"
             >
-              <svg 
+              <svg
                 class="w-4 h-4 transition-transform duration-200"
                 :class="{ 'rotate-90': expandedSections[experience.id || experience.slug] }"
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
               <span>{{ expandedSections[experience.id || experience.slug] ? 'Hide' : 'Show' }} Details</span>
             </button>
-            
-            <div 
+
+            <div
               v-show="expandedSections[experience.id || experience.slug]"
               class="experience-content"
             >
-              <div 
+              <div
                 v-if="experience.content || experience.body || experience.markdown"
                 class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded markdown-content"
                 v-html="renderedExperienceContent(experience)"
@@ -377,21 +357,21 @@
               <p v-else-if="experience.description" class="text-gray-300 leading-relaxed">
                 {{ experience.description }}
               </p>
-            </div>
-          </div>
-          
-          <!-- Linked Skills -->
-          <div v-if="experience.linkedSkills && experience.linkedSkills.length" class="mt-6 pt-6 border-t border-white/10">
-            <h5 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Skills & Technologies</h5>
-            <div class="flex flex-wrap gap-2">
-              <NuxtLink
-                v-for="skill in experience.linkedSkills" 
-                :key="skill.id || skill"
-                :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
-                class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer"
-              >
-                {{ typeof skill === 'object' ? skill.name : skill }}
-              </NuxtLink>
+
+              <!-- Linked Skills -->
+              <div v-if="experience.linkedSkills && experience.linkedSkills.length" class="mt-6 pt-6 border-t border-white/10">
+                <h5 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Skills & Technologies</h5>
+                <div class="flex flex-wrap gap-2">
+                  <NuxtLink
+                    v-for="skill in experience.linkedSkills"
+                    :key="skill.id || skill"
+                    :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
+                    class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer"
+                  >
+                    {{ typeof skill === 'object' ? skill.name : skill }}
+                  </NuxtLink>
+                </div>
+              </div>
             </div>
           </div>
                 </div>
@@ -469,49 +449,39 @@
               :key="role.id || role.title"
               class="pl-5 border-l-2 border-purple-500/50 bg-white/5 rounded-r-lg p-4"
             >
-              <div class="flex items-start justify-between gap-4 mb-2">
+              <div class="flex items-center justify-between gap-4">
                 <h4 class="font-semibold text-gray-100 text-lg">{{ role.title || role.name }}</h4>
                 <span v-if="role.startDate || role.endDate" class="text-xs text-gray-400 whitespace-nowrap">
                   {{ role.startDate ? formatDate(role.startDate) : '' }}
                   {{ role.endDate ? ` – ${formatDate(role.endDate)}` : (role.isOngoing ? ' – Present' : '') }}
                 </span>
               </div>
-              <div v-if="role.skills && role.skills.length" class="flex flex-wrap gap-2 mt-3">
-                <NuxtLink
-                  v-for="skill in role.skills" 
-                  :key="skill.id || skill"
-                  :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
-                  class="px-2.5 py-1 text-xs rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium hover:bg-purple-500/30 transition-colors cursor-pointer"
-                >
-                  {{ typeof skill === 'object' ? skill.name : skill }}
-                </NuxtLink>
-              </div>
             </div>
           </div>
-          
+
           <!-- Content -->
-          <div v-if="experience.content || experience.body || experience.markdown || experience.description">
+          <div v-if="experience.content || experience.body || experience.markdown || experience.description || (experience.linkedSkills && experience.linkedSkills.length)">
             <button
               @click="toggleExpanded(experience.id || experience.slug)"
               class="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 mb-4 transition-colors font-medium"
             >
-              <svg 
+              <svg
                 class="w-4 h-4 transition-transform duration-200"
                 :class="{ 'rotate-90': expandedSections[experience.id || experience.slug] }"
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
               <span>{{ expandedSections[experience.id || experience.slug] ? 'Hide' : 'Show' }} Details</span>
             </button>
-            
-            <div 
+
+            <div
               v-show="expandedSections[experience.id || experience.slug]"
               class="experience-content"
             >
-              <div 
+              <div
                 v-if="experience.content || experience.body || experience.markdown"
                 class="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-headings:font-bold prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white prose-ul:text-gray-300 prose-li:text-gray-300 prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-blue-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded markdown-content"
                 v-html="renderedExperienceContent(experience)"
@@ -519,21 +489,21 @@
               <p v-else-if="experience.description" class="text-gray-300 leading-relaxed">
                 {{ experience.description }}
               </p>
-            </div>
-          </div>
-          
-          <!-- Linked Skills -->
-          <div v-if="experience.linkedSkills && experience.linkedSkills.length" class="mt-6 pt-6 border-t border-white/10">
-            <h5 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Skills & Technologies</h5>
-            <div class="flex flex-wrap gap-2">
-              <NuxtLink
-                v-for="skill in experience.linkedSkills" 
-                :key="skill.id || skill"
-                :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
-                class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer"
-              >
-                {{ typeof skill === 'object' ? skill.name : skill }}
-              </NuxtLink>
+
+              <!-- Linked Skills -->
+              <div v-if="experience.linkedSkills && experience.linkedSkills.length" class="mt-6 pt-6 border-t border-white/10">
+                <h5 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Skills & Technologies</h5>
+                <div class="flex flex-wrap gap-2">
+                  <NuxtLink
+                    v-for="skill in experience.linkedSkills"
+                    :key="skill.id || skill"
+                    :to="`/search?skill=${encodeURIComponent(typeof skill === 'object' ? skill.name : skill)}`"
+                    class="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors cursor-pointer"
+                  >
+                    {{ typeof skill === 'object' ? skill.name : skill }}
+                  </NuxtLink>
+                </div>
+              </div>
             </div>
           </div>
                 </div>
@@ -541,7 +511,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Fallback if no experiences from API -->
         <div v-if="!experiences || experiences.length === 0" class="text-center py-12 text-gray-400">
           <p>No experiences available.</p>
