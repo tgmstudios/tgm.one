@@ -5,12 +5,14 @@
       <slot />
     </main>
     <FooterSection :menu="headerMenu"/>
+    <ContentLoadWarning />
   </div>
 </template>
 
 <script setup>
 import HeaderSection from '~/components/HeaderSection.vue'
 import FooterSection from '~/components/FooterSection.vue'
+import ContentLoadWarning from '~/components/ContentLoadWarning.vue'
 import logoURL from '~/assets/logo.png'
 import { useHeaderMenu } from '~/composables/useHeaderMenu'
 
@@ -180,5 +182,4 @@ main {
   min-height: 60vh;
 }
 </style>
-
 

@@ -17,5 +17,6 @@ export default defineNuxtPlugin(() => {
   script.src = 'https://api.foligo.tech/analytics.js'
   script.setAttribute('data-key', key)
   script.defer = true
+  script.onerror = () => window.dispatchEvent(new Event('foligo-request-failed'))
   document.head.appendChild(script)
 })
