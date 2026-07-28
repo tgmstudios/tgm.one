@@ -47,7 +47,7 @@
         </nav>
       </div>
       <div class="mt-8 text-xs text-gray-400">
-        <p>© {{ year }} TGM, TGM.One, TGMstudios. All rights reserved.</p>
+        <p>TGM — Think. Grow. Make.</p>
       </div>
     </div>
   </footer>  
@@ -63,8 +63,7 @@ export default {
   },
   data() {
     return {
-      logoURL,
-      year: new Date().getFullYear()
+      logoURL
     }
   },
   computed: {

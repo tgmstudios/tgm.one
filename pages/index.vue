@@ -2,7 +2,7 @@
   <div class="home">
     <SeoContent />
     <!-- Early LCP anchor: renders a large text element instantly to capture LCP before the animation/globe -->
-    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
+    <div v-if="showTextAnimation" class="absolute inset-0 flex items-center justify-center pointer-events-none z-0" aria-hidden="true">
       <h1 class="text-4xl md:text-6xl font-extrabold text-white/90 text-center px-4" style="content-visibility: visible; contain: none;">
         Aiden Johnson
       </h1>
