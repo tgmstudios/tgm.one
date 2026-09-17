@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      foligoBaseUrl: process.env.FOLIGO_BASE_URL || 'https://api.foligo.tech',
+      foligoBaseUrl: process.env.FOLIGO_BASE_URL || 'https://api.foligo.org',
       foligoProjectId: process.env.FOLIGO_PROJECT_ID || 'e9f40961-f0db-42f1-8269-8084906a2828',
       foligoSubdomain: process.env.FOLIGO_SUBDOMAIN || 'aiden',
       foligoAnalyticsKey: process.env.FOLIGO_ANALYTICS_KEY || ''
@@ -27,17 +27,17 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'TGM.One' },
         { property: 'og:locale', content: 'en_US' },
-        { property: 'og:image', content: 'https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file' },
+        { property: 'og:image', content: 'https://api.foligo.org/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file' },
         { property: 'og:image:alt', content: 'Aiden Johnson — TGM.One' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:image', content: 'https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file' },
+        { name: 'twitter:image', content: 'https://api.foligo.org/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file' },
         { name: 'theme-color', content: '#0a0a0a' }
       ],
       link: [
         { rel: 'canonical', href: 'https://tgm.one' },
-        { rel: 'preconnect', href: 'https://api.foligo.tech' },
+        { rel: 'preconnect', href: 'https://api.foligo.org' },
         { rel: 'preconnect', href: 'https://unpkg.com', crossorigin: 'anonymous' },
         { rel: 'preload', href: 'https://unpkg.com/three-globe/example/img/earth-night.jpg', as: 'image', crossorigin: 'anonymous' }
       ],

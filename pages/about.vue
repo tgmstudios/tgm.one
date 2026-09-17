@@ -10,7 +10,7 @@
     <header id="about-header" class="mb-12 lg:mb-16">
       <div class="flex flex-col md:flex-row md:items-center gap-8 mb-8">
         <img 
-          src="https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file" 
+          src="https://api.foligo.org/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file" 
           alt="Aiden Johnson"
           width="160"
           height="160"

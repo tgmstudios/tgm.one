@@ -4,7 +4,7 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div class="flex items-center gap-4">
           <img 
-            src="https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file" 
+            src="https://api.foligo.org/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file" 
             alt="Aiden Johnson" 
             width="64"
             height="64"

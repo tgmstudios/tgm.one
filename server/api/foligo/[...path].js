@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const body = method !== 'GET' && method !== 'HEAD' ? await readBody(event) : undefined
 
   const config = useRuntimeConfig()
-  const baseUrl = config.public.foligoBaseUrl || 'https://api.foligo.tech'
+  const baseUrl = config.public.foligoBaseUrl || 'https://api.foligo.org'
   const url = `${baseUrl}/${path}`
 
   try {

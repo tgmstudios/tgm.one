@@ -79,7 +79,7 @@ const canonicalUrl = computed(() => {
 const pageImage = computed(() => {
   const path = route.path || '/'
   // Default OG image: use profile photo (much better than 16x16 favicon)
-  return 'https://api.foligo.tech/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file'
+  return 'https://api.foligo.org/api/media/c538ffd7-ae99-431b-9d76-8bf3345e92ff/file'
 })
 
 watchEffect(() => {
