@@ -67,36 +67,34 @@ jobs:
       id: extract_branch
 
     - name: Redeploy Rancher
+      env:
+        RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
+        BRANCH: ${{ steps.extract_branch.outputs.branch }}
       run: |
+        set -euo pipefail
         url='https://rancher.tgm.one'
-        cluster=c-lx99g
-        token=${{ secrets.RANCHER_TOKEN }}
 
         redeploy() {
-            local app=$1
-            pod_upgrade_body=$(curl -s -u "$token" \
-            -k $url/k8s/clusters/$cluster/v1/apps.deployments/$namespace/$app \
-            -X GET \
-            -H 'Accept: application/json' \
-            -H 'Content-Type: application/json' \
-            -H 'Pragma: no-cache' \
-            -H 'Cache-Control: no-cache' 2>&1 | sed  "s/\"cattle\.io\/timestamp\"\:\"[0-9T:Z-]*\"/\"cattle\.io\/timestamp\":\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"/g")
+            local cluster=$1 namespace=$2 app=$3 now patch
+            now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            patch=$(jq -cn --arg ts "$now" \
+              '{spec:{template:{metadata:{annotations:{"cattle.io/timestamp":$ts}}}}}')
 
-            curl -u "$token" \
-            -k -s $url/k8s/clusters/$cluster/v1/apps.deployments/$namespace/$app \
-            -X PUT \
-            -H 'Accept: application/json' \
-            -H 'Content-Type: application/json' \
-            --data-binary "$pod_upgrade_body" --compressed
+            curl --fail-with-body -sS -k -u "$RANCHER_TOKEN" \
+              -X PATCH \
+              -H 'Accept: application/json' \
+              -H 'Content-Type: application/strategic-merge-patch+json' \
+              --data-binary "$patch" \
+              -o /dev/null \
+              "$url/k8s/clusters/$cluster/apis/apps/v1/namespaces/$namespace/deployments/$app"
+            echo "Redeploy triggered: $cluster/$namespace/$app at $now"
         }
 
-        echo "${{ steps.extract_branch.outputs.branch }}"
-        if [ ${{ steps.extract_branch.outputs.branch }} = "master" ]; then
-            namespace=tgm-one
-            redeploy "website"
-        elif [ ${{ steps.extract_branch.outputs.branch }} = "staging" ]; then
-            namespace=tgm-one-staging
-            redeploy "tgm-one-staging"
+        echo "$BRANCH"
+        if [ "$BRANCH" = "master" ]; then
+            redeploy c-lx99g tgm-one website
+        elif [ "$BRANCH" = "staging" ]; then
+            redeploy local tgm-one-staging tgm-one-staging
         else
             exit 0
         fi
