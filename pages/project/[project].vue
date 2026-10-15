@@ -19,7 +19,7 @@
         <img 
           :src="projectobj.featuredImage || projectobj.image" 
           :alt="`${projectobj.title} featured image`" 
-          class="w-full rounded-xl object-cover shadow-lg"
+          class="block mx-auto w-auto h-auto max-w-full rounded-xl object-contain shadow-lg"
           style="max-height: 400px;"
         />
       </div>
