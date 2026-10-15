@@ -1,0 +1,62 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "github-staging-deployer",
+        "namespace": "tgm-one-staging"
+      }
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "github-staging-deployer",
+        "namespace": "tgm-one-staging"
+      },
+      "rules": [
+        {
+          "apiGroups": ["apps"],
+          "resources": ["deployments"],
+          "resourceNames": ["tgm-one-staging"],
+          "verbs": ["get", "patch"]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "github-staging-deployer",
+        "namespace": "tgm-one-staging"
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "Role",
+        "name": "github-staging-deployer"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "github-staging-deployer",
+          "namespace": "tgm-one-staging"
+        }
+      ]
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Secret",
+      "type": "kubernetes.io/service-account-token",
+      "metadata": {
+        "name": "github-staging-deployer-token",
+        "namespace": "tgm-one-staging",
+        "annotations": {
+          "kubernetes.io/service-account.name": "github-staging-deployer"
+        }
+      }
+    }
+  ]
+}

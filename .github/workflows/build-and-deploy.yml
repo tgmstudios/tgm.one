@@ -69,18 +69,38 @@ jobs:
     - name: Redeploy Rancher
       env:
         RANCHER_TOKEN: ${{ secrets.RANCHER_TOKEN }}
+        STAGING_RANCHER_TOKEN: ${{ secrets.STAGING_RANCHER_TOKEN }}
         BRANCH: ${{ steps.extract_branch.outputs.branch }}
       run: |
         set -euo pipefail
         url='https://rancher.tgm.one'
 
         redeploy() {
-            local cluster=$1 namespace=$2 app=$3 now patch
+            local cluster=$1 namespace=$2 app=$3 auth=$4 now patch
+            local -a auth_args
             now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             patch=$(jq -cn --arg ts "$now" \
               '{spec:{template:{metadata:{annotations:{"cattle.io/timestamp":$ts}}}}}')
 
-            curl --fail-with-body -sS -k -u "$RANCHER_TOKEN" \
+            case "$auth" in
+              basic)
+                auth_args=(-u "$RANCHER_TOKEN")
+                ;;
+              bearer-staging)
+                if [ -z "${STAGING_RANCHER_TOKEN:-}" ]; then
+                  echo "STAGING_RANCHER_TOKEN is not set" >&2
+                  return 1
+                fi
+                auth_args=(-H @-)
+                ;;
+              *)
+                echo "unknown auth mode" >&2
+                return 1
+                ;;
+            esac
+
+            printf 'Authorization: Bearer %s\n' "${STAGING_RANCHER_TOKEN:-}" | \
+            curl --fail-with-body -sS -k "${auth_args[@]}" \
               -X PATCH \
               -H 'Accept: application/json' \
               -H 'Content-Type: application/strategic-merge-patch+json' \
@@ -92,9 +112,9 @@ jobs:
 
         echo "$BRANCH"
         if [ "$BRANCH" = "master" ]; then
-            redeploy c-lx99g tgm-one website
+            redeploy c-lx99g tgm-one website basic
         elif [ "$BRANCH" = "staging" ]; then
-            redeploy local tgm-one-staging tgm-one-staging
+            redeploy local tgm-one-staging tgm-one-staging bearer-staging
         else
             exit 0
         fi
