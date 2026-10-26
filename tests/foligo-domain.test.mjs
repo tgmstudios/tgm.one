@@ -14,7 +14,7 @@ test('isFoligoHostname matches foligo.org and subdomains only', () => {
 test('no tracked file references foligo.tech', () => {
   const root = new URL('..', import.meta.url).pathname
   const files = execFileSync('git', ['ls-files', '-z'], { cwd: root }).toString().split('\0')
-    .filter((f) => f && f !== 'pnpm-lock.yaml' && f !== 'tests/foligo-domain.test.mjs' && f !== 'tests/foligo-legacy-media.test.mjs' && !/\.(png|jpe?g|webp|ico|woff2?|gif|svg)$/i.test(f))
+    .filter((f) => f && f !== 'pnpm-lock.yaml' && f !== 'tests/foligo-domain.test.mjs' && !/\.(png|jpe?g|webp|ico|woff2?|gif|svg)$/i.test(f))
   const offenders = files.filter((f) => { try { return /foligo\.tech/i.test(readFileSync(root + f, 'utf8')) } catch { return false } })
   assert.deepEqual(offenders, [])
 })
