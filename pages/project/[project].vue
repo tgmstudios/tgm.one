@@ -132,6 +132,7 @@ import ContentRenderer from '~/components/ContentRenderer.vue'
 import { computed, watchEffect } from 'vue'
 import { useHead } from '#imports'
 import { useJsonLd } from '~/composables/useJsonLd'
+import { absoluteUrl } from '~/lib/foligoHost.js'
 
 const route = useRoute()
 const config = useRuntimeConfig()
@@ -336,9 +337,7 @@ watchEffect(() => {
     const canonicalUrl = `${siteUrl}${route.path}`
     const pageTitle = `${projectobj.value.title} — TGM.One`
     const description = projectobj.value.excerpt || `Learn more about ${projectobj.value.title} project on TGM.One`
-    const image = projectobj.value.featuredImage || projectobj.value.image ? 
-      `${siteUrl}${projectobj.value.featuredImage || projectobj.value.image}` : 
-      `${siteUrl}/favicon.ico`
+    const image = absoluteUrl(siteUrl, projectobj.value.featuredImage || projectobj.value.image)
     
     // Inject Project schema
     injectJsonLd(projectSchema({
