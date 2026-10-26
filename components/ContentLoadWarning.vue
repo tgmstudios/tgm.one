@@ -16,7 +16,7 @@
         </p>
         <p class="mt-3 text-sm leading-6 text-zinc-300">
           If your network uses a firewall, make sure <strong class="font-medium text-white">tgm.one</strong> and
-          <strong class="font-medium text-white">foligo.tech</strong> are allowed.
+          <strong class="font-medium text-white">foligo.org</strong> are allowed.
         </p>
         <button
           type="button"
@@ -32,6 +32,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { isFoligoHostname } from '~/lib/foligoHost.js'
 
 const isVisible = ref(false)
 
@@ -42,7 +43,7 @@ const showWarning = () => {
 const hasFailedFoligoResource = (element) => {
   const url = element?.src || element?.href || ''
   try {
-    return new URL(url, window.location.href).hostname.endsWith('foligo.tech')
+    return isFoligoHostname(new URL(url, window.location.href).hostname)
   } catch {
     return false
   }
