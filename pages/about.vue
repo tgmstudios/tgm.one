@@ -601,7 +601,7 @@ const foligo = createFoligoClient({
   foligoSubdomain: config.public.foligoSubdomain
 })
 
-const { data: experiencesData, pending: experiencesPending, error: experiencesError } = await useAsyncData(
+const { data: experiencesData, pending: experiencesPending, error: experiencesError } = await useFoligoData(
   'experiences',
   () => foligo.getExperiences(),
   {
@@ -612,7 +612,7 @@ const { data: experiencesData, pending: experiencesPending, error: experiencesEr
 )
 
 // Fetch projects and blogs for skills collection
-const { data: projectsData } = await useAsyncData(
+const { data: projectsData } = await useFoligoData(
   'projects-for-skills',
   () => foligo.getProjects(),
   {
@@ -622,7 +622,7 @@ const { data: projectsData } = await useAsyncData(
   }
 )
 
-const { data: blogsData } = await useAsyncData(
+const { data: blogsData } = await useFoligoData(
   'blogs-for-skills',
   () => foligo.getBlogs(),
   {

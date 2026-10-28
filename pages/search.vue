@@ -152,7 +152,7 @@ const foligo = createFoligoClient({
 })
 
 // Fetch data
-const { data: projectsData, pending: projectsPending } = await useAsyncData(
+const { data: projectsData, pending: projectsPending } = await useFoligoData(
   'search-projects',
   () => foligo.getProjects(),
   {
@@ -162,7 +162,7 @@ const { data: projectsData, pending: projectsPending } = await useAsyncData(
   }
 )
 
-const { data: blogsData, pending: blogsPending } = await useAsyncData(
+const { data: blogsData, pending: blogsPending } = await useFoligoData(
   'search-blogs',
   () => foligo.getBlogs(),
   {

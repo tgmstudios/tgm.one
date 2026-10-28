@@ -6,8 +6,9 @@
       @navigate="scrollToHeading"
     />
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <div v-if="pending" class="text-gray-400">Loading project…</div>
-    <div v-else-if="error || !projectobj" class="text-red-400">Project not found.</div>
+    <div v-if="pending && !projectobj" class="text-gray-400" role="status">Loading project…</div>
+    <div v-else-if="error && !projectobj" class="text-gray-400" role="status">Project content is temporarily unavailable. Retrying in your browser; refocus this tab or reconnect to retry.</div>
+    <div v-else-if="!projectobj" class="text-red-400">Project not found.</div>
     
     <div v-else>
       <div class="mb-6">
@@ -142,9 +143,10 @@ const foligo = createFoligoClient({
   foligoSubdomain: config.public.foligoSubdomain
 })
 
-const { data, pending, error } = await useAsyncData(
+const { data, pending, error } = await useFoligoData(
   `project-${route.params.project}`,
-  () => foligo.getProjectBySlug(route.params.project)
+  () => foligo.getProjectBySlug(route.params.project),
+  { watch: [() => route.params.project] }
 )
 
 // Transform project to ensure compatibility
@@ -205,13 +207,12 @@ const formatDate = (dateStr) => {
   }
 }
 
-// If project not found, throw 404
-if (!pending.value && !projectobj.value) {
+if (!error.value && !pending.value && !projectobj.value) {
   throw createError({ statusCode: 404, statusMessage: 'Project not found' })
 }
 
 // Fetch all projects for related projects (lazy, client-side only)
-const { data: allProjectsData } = await useAsyncData(
+const { data: allProjectsData } = await useFoligoData(
   'all-projects', 
   () => foligo.getProjects(),
   {

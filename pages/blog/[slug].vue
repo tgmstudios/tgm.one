@@ -5,6 +5,9 @@
       :active-id="activeHeading"
       @navigate="scrollToHeading"
     />
+    <div v-if="!post" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-gray-400" role="status">
+      {{ pending ? 'Loading blog post…' : error ? 'Blog content is temporarily unavailable. Retrying in your browser; refocus this tab or reconnect to retry.' : 'Blog post not found.' }}
+    </div>
     <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10" v-if="post">
     <nav class="mb-6" aria-label="Breadcrumb">
       <NuxtLink to="/blogs" class="text-sm text-gray-300 hover:underline">← Back to blog</NuxtLink>
@@ -89,9 +92,10 @@ const foligo = createFoligoClient({
   foligoSubdomain: config.public.foligoSubdomain
 })
 
-const { data } = await useAsyncData(
+const { data, pending, error } = await useFoligoData(
   `blog-${route.params.slug}`,
-  () => foligo.getBlogBySlug(route.params.slug)
+  () => foligo.getBlogBySlug(route.params.slug),
+  { watch: [() => route.params.slug] }
 )
 
 const post = computed(() => {
@@ -104,15 +108,15 @@ const post = computed(() => {
   }
 })
 
-// If post not found, throw 404
-if (!post.value) {
+// A transport failure is recoverable in the browser; only a successful empty lookup is a 404.
+if (!error.value && !pending.value && !post.value) {
   throw createError({ statusCode: 404, statusMessage: 'Blog post not found' })
 }
 
 const { articleSchema, injectJsonLd } = useJsonLd()
 
 // Fetch all blogs for related posts (lazy, client-side only)
-const { data: allBlogsData } = await useAsyncData(
+const { data: allBlogsData } = await useFoligoData(
   'all-blogs', 
   () => foligo.getBlogs(),
   {

@@ -28,7 +28,7 @@ const foligo = createFoligoClient({
   foligoSubdomain: config.public.foligoSubdomain
 })
 
-const { data: projectsData } = await useAsyncData(
+const { data: projectsData } = await useFoligoData(
   'globe-projects', 
   () => foligo.getProjects(),
   {

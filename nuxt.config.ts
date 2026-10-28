@@ -57,14 +57,13 @@ export default defineNuxtConfig({
       '/sitemap.xml': { prerender: true },
       // Cache API routes
       '/api/**': { cors: true, headers: { 'cache-control': 's-maxage=300' } },
-      // Static pages — use ISR to pick up runtime env vars
-      '/': { isr: 3600 },
-      '/about': { isr: 3600 },
-      // Dynamic pages with ISR
-      '/projects': { isr: 3600 },
-      '/blogs': { isr: 3600 },
-      '/project/**': { isr: 3600 },
-      '/blog/**': { isr: 3600 }
+      // Foligo-backed pages stay live; do not cache transient upstream failures or stale 404s.
+      '/': { isr: false },
+      '/about': { isr: false },
+      '/projects': { isr: false },
+      '/blogs': { isr: false },
+      '/project/**': { isr: false },
+      '/blog/**': { isr: false }
     },
     // Trust proxy headers for reverse proxy setups
     // This ensures Nitro respects X-Forwarded-* headers
