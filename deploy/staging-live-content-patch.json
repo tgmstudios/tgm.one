@@ -1,0 +1,23 @@
+{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "tgm.one/source-commit": "de4630df7359624a4c626892cd6e69ea94b11e88"
+        }
+      },
+      "spec": {
+        "nodeSelector": {"kubernetes.io/hostname": "tgm-rke2-agent-5"},
+        "containers": [
+          {
+            "name": "website",
+            "image": "registry.tgm.one/tgm.one/tgm-one-stage:latest",
+            "imagePullPolicy": "Always",
+            "readinessProbe": {"httpGet": null, "tcpSocket": {"port": 3000}},
+            "livenessProbe": {"httpGet": null, "tcpSocket": {"port": 3000}}
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: registry-dns-repair-agent-5
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: registry-dns-repair
+    app.kubernetes.io/part-of: staging-recovery
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: registry-dns-repair
+    spec:
+      nodeName: tgm-rke2-agent-5
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      hostNetwork: true
+      dnsPolicy: Default
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: repair
+          image: rancher/hardened-calico:v3.30.3-build20250909
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              file=/host/hosts
+              name=registry.tgm.one
+              ip=192.168.102.21
+              mode="${MODE:-inspect}"
+              test -f "$file" && test -r "$file"
+              case "$mode" in
+                inspect)
+                  printf '%s\n' '--- /etc/hosts (base64 preimage; save before apply) ---'
+                  base64 < "$file"
+                  printf '%s\n' '--- end preimage ---'
+                  sha256sum "$file"
+                  ;;
+                apply)
+                  # Reject any existing line mapping this exact hostname elsewhere.
+                  if grep -E '^[[:space:]]*[^#[:space:]]+[[:space:]]+([^#]*[[:space:]])?registry\.tgm\.one([[:space:]]|$)' "$file" | grep -v -E '^[[:space:]]*192\.168\.102\.21([[:space:]]|$)' >/dev/null; then
+                    echo 'conflicting registry.tgm.one mapping; refusing' >&2
+                    exit 20
+                  fi
+                  if grep -E '^[[:space:]]*192\.168\.102\.21([[:space:]]+[^#]*)?([[:space:]]|#|$)' "$file" | grep -E '(^|[[:space:]])registry\.tgm\.one([[:space:]]|$)' >/dev/null; then
+                    echo 'desired mapping already present; unchanged'
+                    sha256sum "$file"
+                    exit 0
+                  fi
+                  current=$(sha256sum "$file" | cut -d ' ' -f 1)
+                  test -n "${EXPECTED_SHA256:-}" && test "$current" = "$EXPECTED_SHA256" || { echo 'preimage hash missing or changed; refusing' >&2; exit 23; }
+                  printf '\n%s\t%s\t# staging registry DNS repair\n' "$ip" "$name" >> "$file"
+                  echo 'mapping appended; existing bytes and file ownership/mode preserved'
+                  sha256sum "$file"
+                  ;;
+                verify)
+                  count=$(grep -E '^[[:space:]]*192\.168\.102\.21([[:space:]]+[^#]*)?([[:space:]]|#|$)' "$file" | grep -Ec '(^|[[:space:]])registry\.tgm\.one([[:space:]]|$)' || true)
+                  test "$count" -eq 1 || { echo "expected one exact mapping; got $count" >&2; exit 21; }
+                  sha256sum "$file"
+                  ;;
+                rollback)
+                  # Guard both the current repaired state and the saved original bytes.
+                  test -n "${EXPECTED_SHA256:-}" && test -n "${PREIMAGE_B64:-}" && test -n "${PREIMAGE_SHA256:-}"
+                  original=$(printf '%s' "$PREIMAGE_B64" | base64 -d | sha256sum | cut -d ' ' -f 1)
+                  test "$original" = "$PREIMAGE_SHA256" || { echo 'backup checksum mismatch; refusing' >&2; exit 24; }
+                  current=$(sha256sum "$file" | cut -d ' ' -f 1)
+                  test "$current" = "$EXPECTED_SHA256" || { echo 'hosts changed since repair; refusing rollback' >&2; exit 22; }
+                  printf '%s' "$PREIMAGE_B64" | base64 -d > "$file"
+                  echo 'original hosts restored'
+                  sha256sum "$file"
+                  ;;
+                *) echo 'MODE must be inspect, apply, verify, or rollback' >&2; exit 2 ;;
+              esac
+          env:
+            - name: MODE
+              value: inspect
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: host-etc-hosts
+              mountPath: /host/hosts
+              readOnly: false
+      volumes:
+        - name: host-etc-hosts
+          hostPath:
+            path: /etc/hosts
+            type: File
